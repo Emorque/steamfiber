@@ -1,12 +1,18 @@
 import { useState, useRef } from "react";
 
 import { FriendList, Friend, SteamProfile, FriendPositions } from '@/components/types'; // Getting types
-
 // import { getSteamProfile, getFriendsList } from "@/api/steam_api";
+// import { getSteamProfile, getFriendsList } from "@/api/steamapi";
+// import { getSteamProfile, getFriendsList } from "@/app/api/steamapi";
+import { getSteamProfile, getFriendsList } from "./steamapi";
+
 
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { HpParticle } from "./HpParticle";
+
+import "./homepage.css";
+
 // import { gsap } from "gsap";
 
 interface HomePageProps {
@@ -72,6 +78,54 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         transition: 'all 0.5s ease'
     }
 
+    const handleSubmit = async (event : React.FormEvent) => {
+        event.preventDefault();
+        if (!(steamId)) {
+            EmptyError();
+            return
+        }
+        const steamProfile = await getSteamProfile(steamId);
+        if (steamProfile) {
+            steamProfileProp(steamProfile);
+            startAnimation(true);
+            setDisabledButton(true);
+        } else {
+            SteamIdError();
+            return;
+        }
+
+        setTimeout(async () => {
+            const fList = await getFriendsList(steamId);
+            if (fList) {
+                friendsListProp(fList);
+                const friendsPos : FriendPositions = {}
+    
+                const length = fList.friends.length
+                const max = Math.sqrt(2000 * length) / 2;
+    
+                {fList.friends.map((friend: Friend) => {
+                    const min = 1                
+                    const pos = {
+                        "x": getSign() * Math.random() * (max - min) + min,
+                        "y": getSign() * Math.random() * (max - min) + min,
+                        "z": Math.random() * 50 - 25,
+                        "timestamp": friend.friend_since,
+                        "calledID": steamId
+                    }
+                    friendsPos[friend.steamid] = pos
+                });
+                friendsPos[steamId] = {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "timestamp": 0,
+                    "calledID": steamId
+                }
+                friendsPositionProp(friendsPos);
+                }
+            }          
+        }, 5000);
+    };
     
     return (
         <div id="form-page-container">
@@ -79,15 +133,14 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
             <button id="info-button" onClick={handleInfo} disabled={disabledButton}>?</button>
 
                 <div id="title" style={opacityStyle}>
-                    <img src="/steamcircle.svg" height={64} width={64}></img>
+                    <img src="/images/steamcircle.svg" height={64} width={64}></img>
                     <h1>SteamCircle</h1>
                 </div>
                 
                 
                 <div id="form-container" style={opacityStyle}>
                     <p>Enter Steam ID:</p>
-                    {/* onSubmit={handleSubmit} */}
-                    <form > 
+                    <form onSubmit={handleSubmit}> 
                         <input
                             type="text"
                             style={errorStyle}
@@ -114,7 +167,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                         <p>3. Your Steam ID is below your username</p>
                         
                         <br/>
-                        <img src="/steamId.png"></img>
+                        <img src="/images/steamId.png"></img>
                     </div>
                 )}    
 
@@ -122,7 +175,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                     <div id="footer">
                         <h4>SteamCircle is a hobby project and is not affiliated with Value or Steam</h4>
                         <h4>Made with <a id="steam" href="https://developer.valvesoftware.com/wiki/Steam_Web_API" target="blank">Steam Web API</a></h4>
-                        <h4>Steam is a trademark of Valve Corporation.</h4>
+                        <h4>Steam is a trademark of Valve Corporation</h4>
                     </div> 
                 )}
             </div>

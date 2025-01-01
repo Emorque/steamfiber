@@ -9,11 +9,8 @@ import { useState, useRef, useEffect } from 'react'
 import { FriendList, SteamProfile, FriendPositions } from '@/components/types';
 
 // Components 
-
 import { HomePage } from '@/components/HomePage'; 
 import { Scene } from '@/components/Scene';
-
-
 
 export default function Home() {
   // Steam API states:
@@ -26,13 +23,9 @@ export default function Home() {
     setSteamProfile(userProfile);
   }
 
-  const handleFriendsList = (friends : FriendList | null) => {
-    setFriendsList(friends);
-  }
+  const handleFriendsList = (friends : FriendList | null) => { setFriendsList(friends) }
 
-  const handleFriendsPosition = (friendsPos : FriendPositions | null) => {
-    setFriendsPositions(friendsPos);
-  }
+  const handleFriendsPosition = (friendsPos : FriendPositions | null) => { setFriendsPositions(friendsPos) }
   
   if (steamProfile && friendsList && friendsPositions) {
     return (
