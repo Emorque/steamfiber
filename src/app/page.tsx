@@ -11,6 +11,7 @@ import { FriendList, SteamProfile, FriendPositions } from '@/components/types';
 // Components 
 import { HomePage } from '@/components/HomePage'; 
 import { Scene } from '@/components/Scene';
+import { FiberPage } from '@/components/FiberPage';
 
 export default function Home() {
   // Steam API states:
@@ -29,10 +30,7 @@ export default function Home() {
   
   if (steamProfile && friendsList && friendsPositions) {
     return (
-      <>
-        <h1>Hi there</h1>
-        <Scene/>
-      </>
+      <FiberPage steamProfileProp={steamProfile} friendsListProp = {friendsList} friendsPositionProp = {friendsPositions}/>
     )
   }
   else {
