@@ -1,4 +1,4 @@
-import { FriendList, Friend, SteamProfile, FriendPositions, RecentlyPlayed } from '@/components/types'; // Getting types
+import { FriendList, SteamProfile, RecentlyPlayed } from '@/components/types'; // Getting types
 
 export async function getSteamProfile(steam_id: string) : Promise<SteamProfile | null> {
     if (!steam_id) {
@@ -26,6 +26,7 @@ export async function getFriendsList(steam_id: string) : Promise<FriendList | nu
     }
     catch (error) {
         console.error(error);
+        console.log("hitherer")
         return null;
     }
 }

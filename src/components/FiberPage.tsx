@@ -1,6 +1,6 @@
-import { FriendList, Friend, SteamProfile, FriendPositions, RecentlyPlayed } from '@/components/types'; // Getting types
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { CameraControls, Text } from '@react-three/drei';
+import { FriendList, SteamProfile, FriendPositions, RecentlyPlayed } from '@/components/types'; // Getting types
+import { Canvas, useFrame } from '@react-three/fiber'
+import { CameraControls, } from '@react-three/drei';
 import { useState, useRef, useEffect} from "react";
 
 import { getSteamProfile, getFriendsList, getRecentGames } from "./steamapi";
@@ -49,17 +49,17 @@ interface CameraAnimationProps {
 function Three({position, id, timestamp, clicked} : LabelProps){
     // This reference will give us direct access to the THREE.Mesh object
     const ref = useRef<THREE.Mesh>(null!);
-    const textRef = useRef<THREE.Mesh>(null!);
+    // const textRef = useRef<THREE.Mesh>(null!);
     const [active, setActive] = useState(false);
 
-    const { camera } = useThree();
+    // const { camera } = useThree();
 
     useFrame(() => {
         // Rotate the mesh continuously
         if (ref.current) ref.current.rotation.x += 0.01;
         if (ref.current) ref.current.rotation.y -= 0.01;
 
-        if (textRef.current) textRef.current.lookAt(camera.position);
+        // if (textRef.current) textRef.current.lookAt(camera.position);
     });
 
     const handleClick = () => {
@@ -103,9 +103,9 @@ function Three({position, id, timestamp, clicked} : LabelProps){
                 <boxGeometry args={[10, 10, 10]} />
                 <meshStandardMaterial color={getHSL(position.x, position.y)}/>
             </mesh>
-            {active && (
+            {/* {active && (
                 <Text ref={textRef} fontSize={5} position={[position.x,position.y + 15,position.z]}>ID: {id}</Text>
-            )}
+            )} */}
         </>
     );
 }
@@ -193,12 +193,12 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
           <div id='friend-profile'>
             <h2>{friendProfile.personaname}</h2>
             <div id='photo-status'>
-              <img id='friend-photo' src={friendProfile.avatarfull}></img>
+              <img id='friend-photo' src={friendProfile.avatarfull} fetchPriority='low' alt={`${friendProfile.personaname}'s Steam Picture`}></img>
               <div id='profile-buttons'>
                 <h4>{stateStyle[friendProfile.personastate]}</h4>
                 <div id='copy-focus'>
-                  <img src="/images/focus.svg" height={30} width={30} onClick={() => setNewFocus()} className='cursor-pointer'></img>
-                  <img src="/images/copy.svg" height={30} width={30} onClick={() => copyToClipboard()} className='cursor-pointer'></img>
+                  <img src="/images/focus.svg" height={30} width={30} onClick={() => setNewFocus()} className='cursor-pointer' fetchPriority='low' alt={`Click to focus on ${friendProfile.personaname}`}></img>
+                  <img src="/images/copy.svg" height={30} width={30} onClick={() => copyToClipboard()} className='cursor-pointer' fetchPriority='low' alt={`Click to copy ${friendProfile.personaname}'s Steam id`}></img>
                 </div>
               </div>
             </div>
@@ -215,7 +215,7 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
                       <div className='game' key={game.appid}>
                         <a href={`https://store.steampowered.com/app/${game.appid}/`} target='blank'>
                           <div className='game-metadata'>
-                            <img src={`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`} />
+                            <img fetchPriority='low' src={`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`} alt={`Icon of ${game.name}`} />
                             <p>{game.name}</p>
                           </div>
                         </a>
@@ -251,7 +251,7 @@ function CustomCameraControls({particlePos, cameraRef} : CameraAnimationProps){
       else {
         cameraRef.current?.setLookAt(particlePos[0],particlePos[1],particlePos[2] + 200, particlePos[0],particlePos[1],particlePos[2], true);
       }
-    }, [particlePos]);
+    }, [particlePos, cameraRef]);
   
     return(<CameraControls
       enabled={true}
@@ -277,12 +277,9 @@ interface FiberPageProps {
 }
 
 export function FiberPage({steamProfileProp, friendsListProp, friendsPositionProp} : FiberPageProps) {
-    const [steamProfile, setSteamProfile] = useState<SteamProfile | null>(steamProfileProp);
+    const [steamProfile] = useState<SteamProfile | null>(steamProfileProp);
     const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
     const [friendsPos, setFriendsPos] = useState<FriendPositions | null>(friendsPositionProp);
-
-    console.log(steamProfile, friendsList, friendsPos);
-    
 
     const [displayedSteamId, setDisplayedSteamId] = useState<ParticleInfo | null>(null);
     const [profileBgColor, setBgColor] = useState<string>("#0B1829");
@@ -294,34 +291,28 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const [freeRoamIcon, setFreeRoamIcon] = useState<string>("/images/arrow-repeat.svg");
   
   
-    const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
+    // const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   
     const [cameraPos, setCameraPos] = useState<[number, number, number] | [0,0,0]>([0,0,0]);
   
     const [showUI, setUI] = useState<boolean>(true);
   
-    const [starting, setStarting] = useState<boolean>(false); // TO DO: remove this state, I don't believe it is used
+    // const [starting, setStarting] = useState<boolean>(false); // TO DO: remove this state, I don't believe it is used
   
     const [search, setSearch] = useState<string>('');
   
     const cameraControlsRef = useRef<CameraControls>(null);
   
-    const [freeRoam, setFreeRoam] = useState<boolean>(false);
+    const [freeRoam, setFreeRoam] = useState<string>("free roam");
 
     // Next two functions are for updating both maps FriendList and FriendPos with friend's friendList data
     const handleNewFriendsList = (newFriends : FriendList | null) => {
         if (newFriends && friendsPos && friendsList) {
           const friendListClone = {... friendsList}
-          // console.log("og friendList", friendsList);
-          // console.log("cloneListV1", friendListClone);
           newFriends.friends.map((friend) => {
           if (!(friend.steamid in friendsPos || friend.steamid === steamProfile?.steamid) ) {
               friendListClone.friends.push(friend); 
-              // console.log(friend)           
           }
-          // else {
-            // console.log("wrong", friend);
-          // }
           })
           console.log("cloneList", friendListClone);
           setFriendsList(friendListClone);
@@ -344,7 +335,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const handleClick = (pInfo: ParticleInfo) => {
       setDisplayedSteamId(pInfo);  // Update the state to trigger a rerender
       setBgColor(getProfileHSL(pInfo.x, pInfo.y))
-      setSelectedFriend(pInfo.pId);
+      // setSelectedFriend(pInfo.pId);
   
       setUI(true);
     }
@@ -352,7 +343,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const turnOff = () => {
       setDisplayedSteamId(null);
       setBgColor("#0B1829");
-      setSelectedFriend(null);
+      // setSelectedFriend(null);
     }
   
     const handleSubmit = async (event : React.FormEvent) => {
@@ -370,10 +361,10 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
 
           setDisplayedSteamId(info);
           setBgColor(getProfileHSL(info.x,info.y));
-          setSelectedFriend(search);
+          // setSelectedFriend(search);
 
           setCameraPos([position.x, position.y, position.z]);
-          setStarting(true)
+          // setStarting(true)
         }
         else {
           alert('Friend Id not Found');
@@ -399,7 +390,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         }
         setDisplayedSteamId(info);
         setBgColor(getProfileHSL(info.x,info.y));
-        setSelectedFriend(null);
+        // setSelectedFriend(null);
         setCameraPos([position.x, position.y, position.z]);
       }
   
@@ -416,7 +407,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         }
         setDisplayedSteamId(userInfo);
         setBgColor("#0B1829");
-        setSelectedFriend(null);
+        // setSelectedFriend(null);
         setCameraPos([0,0,0]);
       }
     }
@@ -429,9 +420,9 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       setCameraPos(newFocus);
     }
   
-    const goHome = () => {
-      window.location.reload();
-    }
+    // const goHome = () => {
+    //   window.location.reload();
+    // }
   
     // camera control buttons
     const fourdegrees = () => {
@@ -448,7 +439,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     }
   
     const fourdegreesUp = () => {
-      const sign = (verticalCamera === "up")? 1 : -1;
+      const sign = (verticalCamera === "up")? -1 : 1;
       cameraControlsRef.current?.rotate(0, 45 * DEG2RAD * (sign), true); // This is a pretty cool spin animation without the DEG2RAD
     }
   
@@ -466,11 +457,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       if (freeRoam && intervalID.current) {
         clearInterval(intervalID.current);
         intervalID.current = null
-        setFreeRoam(false)
+        setFreeRoam("free roam")
         setFreeRoamIcon("/images/arrow-repeat.svg");
       } else {
         intervalID.current = setInterval(freeRoamAnimation, 250) //The default smooth time for camera controls is 0.25 seconds: (.smoothTime)
-        setFreeRoam(true)
+        setFreeRoam("pause")
         setFreeRoamIcon("/images/pause-circle.svg")
       }       
     }
@@ -502,11 +493,8 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     }
   
     const verticalStyle = {
-      transform: (verticalCamera === "up")? "scaleY(-1)" : "scaleY(1)",
+      transform: (verticalCamera === "up")? "scaleY(1)" : "scaleY(-1)",
       transition: "all 0.5 linear"
-    }
-
-    const freeRoamStyle = {
     }
   
     const toggleVerticalCamera = () => {
@@ -572,17 +560,17 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                 </form>
                 <div id='camera-container'>
                   <div id='select-btns'> 
-                    <img onClick={randomFriend} src='/images/shuffle.svg' width={40} height={40} className='cursor-pointer'/>  
-                    <img onClick={backToUser} src='/images/focus.svg' width={40} height={40} className='cursor-pointer'/>  
+                    <img fetchPriority='low' onClick={randomFriend} src='/images/shuffle.svg' width={40} height={40} className='cursor-pointer' alt='Click to select a random friend'/>  
+                    <img fetchPriority='low' onClick={backToUser} src='/images/focus.svg' width={40} height={40} className='cursor-pointer' alt='Click to focus back to yourself'/>  
                   </div>
 
-                  <img id='toggleCameraSettings' onClick={toggleCameraSettings} src='/images/cameraSettings.svg' width={50} height={50} className='cursor-pointer'></img>
+                  <img fetchPriority='low' id='toggleCameraSettings' onClick={toggleCameraSettings} src='/images/cameraSettings.svg' width={50} height={50} className='cursor-pointer' alt='Click to toggle camera settings'></img>
                   
                   <div style={cameraStyle}>                    
                     <div className='settings-container'>
                       <div onClick={toggleHorizontalCamera} className='camera-container'>
-                        <img src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer'></img>
-                        <img src="/images/arrow-right.svg" width={25} height={25} style={horizontalStyle} className='arrow cursor-pointer'></img>
+                        <img fetchPriority='low' src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer' alt='base camera image'></img>
+                        <img fetchPriority='low' src="/images/arrow-right.svg" width={25} height={25} style={horizontalStyle} className='arrow cursor-pointer' alt={`Currently toggled to face ${horizontalCamera}`}></img>
                       </div>
                       <div id='horizontal-degrees'>
                         <button onClick={fourdegrees}>45°</button>
@@ -593,23 +581,23 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         
                     <div className='settings-container'>
                         <div onClick={toggleVerticalCamera} className='camera-container cursor-pointer'>
-                          <img src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer'></img>
-                          <img src="/images/arrow-up.svg" width={25} height={25} style={verticalStyle} className='arrow cursor-pointer'></img>
+                          <img fetchPriority='low' src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer' alt='base camera image'></img>
+                          <img fetchPriority='low' src="/images/arrow-up.svg" width={25} height={25} style={verticalStyle} className='arrow cursor-pointer' alt={`Currently toggled to face ${verticalCamera}`}></img>
                         </div>
                         <button id='fortyfive-degrees' onClick={fourdegreesUp}>45°</button>
                     </div>
                     <div id='zoom-btns'>
-                        <img onClick={zoomIn} src='/images/zoom-in.svg' width={30} height={30} className='cursor-pointer'></img>
-                        <img onClick={zoomOut} src='/images/zoom-out.svg' width={30} height={30} className='cursor-pointer'></img>
+                        <img fetchPriority='low' onClick={zoomIn} src='/images/zoom-in.svg' width={30} height={30} className='cursor-pointer' alt='Click to zoom in'></img>
+                        <img fetchPriority='low' onClick={zoomOut} src='/images/zoom-out.svg' width={30} height={30} className='cursor-pointer' alt='Click to zoom out'></img>
                     </div>
                     <div>
                         {/* <img onClick={handleFreeRoam} src='/images/cameraSettings.svg' width={50} height={50}></img> */}
                       <div onClick={handleFreeRoam} className='camera-container'>
-                        <img src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer'></img>
-                        <img src={freeRoamIcon} width={25} height={25} className='arrow cursor-pointer'></img>
+                        <img fetchPriority='low' src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer' alt='base camera image'></img>
+                        <img fetchPriority='low' src={freeRoamIcon} width={25} height={25} className='arrow cursor-pointer' alt={`Currently toggled to ${freeRoam} on click`}></img>
                       </div>
                     </div>
-                    <img onClick={hideUI} src='/images/hide.svg' width={50} height={50} className='cursor-pointer'></img>
+                    <img fetchPriority='low' onClick={hideUI} src='/images/hide.svg' width={50} height={50} className='cursor-pointer' alt='Click to hide UI'></img>
                   </div>
       
               </div>

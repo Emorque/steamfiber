@@ -153,10 +153,6 @@
     /* background-color: red; */
 }
 
-.base-camera {
-  
-}
-
 .arrow {
     position: absolute;
     right:0;
@@ -189,25 +185,10 @@ button,.cursor-pointer{
     cursor: pointer;
 }
 
-/* h2 {
-    font-size: 1rem;
-}
-
-h4 {
-    font-size: 1rem;
-}
-
-p {
-    font-size: 0.8rem;
-} */
-/*  */
-
 input[type="text"] {
-    /* background-color: #1d242c; */
     color: black;
     border: solid 1px #8f8f8f;
     padding: 1px 6px;
-    /* width: 150px; */
     width: 100px;
 }
 

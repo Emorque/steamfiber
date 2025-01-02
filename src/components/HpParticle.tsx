@@ -9,12 +9,19 @@ interface UserSquareProps {
 
 export function HpParticle({animationStart} : UserSquareProps) {
     const userRef = useRef<THREE.Mesh>(null!);
-    console.log(animationStart);
-
     const {camera} = useThree();
-    console.log(camera.position);
 
     const timeline = gsap.timeline({repeat: 2, repeatDelay: 2.5}); 
+
+    useFrame(() => {
+        if (animationStart) {
+            if (userRef.current) userRef.current.rotation.x += 0.01;
+            if (userRef.current) userRef.current.rotation.y += 0.01;   
+        }
+        else {
+            if (userRef.current) userRef.current.rotation.z -= 0.01;
+        }
+    })
 
     if (animationStart) {
         timeline.to(camera.position, {
@@ -30,17 +37,6 @@ export function HpParticle({animationStart} : UserSquareProps) {
             z: 4,
             duration: 2.5,
         });
-
-        useFrame(() => {
-            if (userRef.current) userRef.current.rotation.x += 0.01;
-            if (userRef.current) userRef.current.rotation.y += 0.01;
-        })
-        
-    }
-    else{
-        useFrame(() => {
-            if (userRef.current) userRef.current.rotation.z -= 0.01;
-        })
     }
     
     return (

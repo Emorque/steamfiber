@@ -1,11 +1,10 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 import { FriendList, Friend, SteamProfile, FriendPositions } from '@/components/types'; // Getting types
 import { getSteamProfile, getFriendsList } from "./steamapi";
 
 
-import * as THREE from 'three'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas } from '@react-three/fiber'
 import { HpParticle } from "./HpParticle";
 
 import "./homepage.css";
@@ -129,7 +128,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
             <button id="info-button" onClick={handleInfo} disabled={disabledButton}>?</button>
 
                 <div id="title" style={opacityStyle}>
-                    <img src="/images/steamcircle.svg" height={64} width={64}></img>
+                    <img src="/images/steamfiber.svg" height={64} width={64} fetchPriority='low' alt="Steam Fiber Logo"></img>
                     <h1>SteamCircle</h1>
                 </div>
                 
@@ -149,7 +148,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                         />
                     </form>
                     <div>
-                        <button onClick={showHelpComponent} id="form-button" disabled={disabledButton}>Don't Know?</button>
+                        <button onClick={showHelpComponent} id="form-button" disabled={disabledButton}>Don&apos;t Know?</button>
                         {emptyError && (<p className="error-text">Please Enter your Steam ID</p>)}
                         {idError && (<p className="error-text">Invalid Steam ID</p>)}
                     </div>
@@ -159,11 +158,11 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                     <div id="help-component">
                         <button id="close-form-btn" onClick={hideHelpComponent} disabled={disabledButton}>X</button>
                         <p>1. Visit <a href="https://steamcommunity.com/" target="blank">Steam</a> and select your username</p>
-                        <p>2. Select "Account details"</p>
+                        <p>2. Select &quot;Account details&quot;</p>
                         <p>3. Your Steam ID is below your username</p>
                         
                         <br/>
-                        <img src="/images/account.webp"></img>
+                        <img src="/images/account.webp" alt="Acccount details page for a Steam User" width={294} height={130}></img>
                     </div>
                 )}    
 

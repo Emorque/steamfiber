@@ -1,16 +1,11 @@
 'use client'
-// import Image from "next/image";
-// import styles from "./page.module.css";
-
-// React imports
-import { useState, useRef, useEffect } from 'react'
+import { useState} from 'react'
 
  // Getting types
 import { FriendList, SteamProfile, FriendPositions } from '@/components/types';
 
 // Components 
 import { HomePage } from '@/components/HomePage'; 
-import { Scene } from '@/components/Scene';
 import { FiberPage } from '@/components/FiberPage';
 
 export default function Home() {

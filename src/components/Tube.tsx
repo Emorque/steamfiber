@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { FriendList, Friend, SteamProfile, FriendPositions, RecentlyPlayed } from '@/components/types'; // Getting types
+import { FriendPositions } from '@/components/types'; // Getting types
 
 interface TubeProps {
     po : {
@@ -16,7 +16,6 @@ interface TubeInstanceProps {
 }
 
 function TubeInstance({position} : TubeInstanceProps){
-    // console.log("exe")
     const path = new THREE.CatmullRomCurve3([
         new THREE.Vector3( position[0],position[1],position[2]),
         // new THREE.Vector3( po.x/2, po.y/2, 0),
@@ -41,7 +40,6 @@ export function Tube({po, allPositions} : TubeProps) {
     let friendPos
     let tubeCoordinates: [number,number,number, number,number,number]
     const friendAdjList = [];
-    // console.log(allPositions);
 
     while (start.x !== 0 && start.y !== 0 && start.z !== 0) {
         friendPos = allPositions[start.calledID]
