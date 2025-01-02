@@ -6,6 +6,7 @@ import { useState, useRef, useEffect} from "react";
 import { getSteamProfile, getFriendsList, getRecentGames } from "./steamapi";
 import { Tube } from './Tube';
 
+import "./fiberpage.css"
 
 import * as THREE from 'three'
 import { DEG2RAD } from 'three/src/math/MathUtils.js'
@@ -36,7 +37,7 @@ interface FriendProps {
     friend_since: number;
     setFocus : (currParticlePos : [number,number,number]) => void;
     allPositions: FriendPositions;
-    friendsListProp: (newFriends : FriendList | undefined) => void;
+    friendsListProp: (newFriends : FriendList | null) => void;
     friendsPositionProp: (newFriendsPos : FriendPositions | null) => void;
 }
 
@@ -50,8 +51,6 @@ function Three({position, id, timestamp, clicked} : LabelProps){
     const ref = useRef<THREE.Mesh>(null!);
     const textRef = useRef<THREE.Mesh>(null!);
     const [active, setActive] = useState(false);
-
-    // console.log(position, id);
 
     const { camera } = useThree();
 
@@ -98,14 +97,8 @@ function Three({position, id, timestamp, clicked} : LabelProps){
                 }}
                 onClick={(e) => {
                   handleClick();
-                  console.log("hi");
                   e.stopPropagation();
                 }}
-                // onContextMenu={(e) => {
-                //   // console.log(id);
-                //   navigator.clipboard.writeText(id); // copies friend's id to user's clipboard
-                //   e.stopPropagation();
-                // }}
             >
                 <boxGeometry args={[10, 10, 10]} />
                 <meshStandardMaterial color={getHSL(position.x, position.y)}/>
@@ -148,8 +141,6 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
           const recentlyPlayed = await getRecentGames(friend_id);
           setFriendProfile(steamProfile);
           setRecentGames(recentlyPlayed)
-          console.log("steamProfile:", steamProfile)
-          console.log("recentlyPlayed:", recentlyPlayed)
         })
         () 
       }, [friend_id])//The dependency array [friend_id] executes this await function call whenever the friend_id from FriendProps changes. i.e., when a different particle is cliked. If the friend_id is the same, no new await call is made
@@ -167,9 +158,9 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
         }
   
         const addFriends = async () => {
+
           const friendsFriendList = await getFriendsList(friend_id);
           if (friendsFriendList) {
-            // friendsListProp(fList);
             const currParticlePos = allPositions[friend_id]
             const forward = currParticlePos.z > 0 ? 1 : -1;
   
@@ -180,57 +171,51 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
             const max = Math.sqrt(2000 * length) / 2;
   
             {friendsFriendList.friends.map((friend) => {
-                // const min = 1                
-                // const pos: [number, number, number, number,string] = [ // Done differently to give some distance to the friend and adjust so that friend is the origin
-                //     (getSign() * Math.random() * (max - min) + min) + currParticlePos[0],
-                //     (getSign() * Math.random() * (max - min) + min) + currParticlePos[1],
-                //     currParticlePos[2] + (forward * (Math.random() * 50 + 25)), 
-                //     friend.friend_since,
-                //     friend_id
-                // ]
+              if (!(friend.steamid in allPositions)) {
                 const min = 1                
                 const pos = {
-                    "x": getSign() * Math.random() * (max - min) + min,
-                    "y": getSign() * Math.random() * (max - min) + min,
-                    "z": Math.random() * 50 - 25,
+                    "x": (getSign() * Math.random() * (max - min) + min) + currParticlePos.x,
+                    "y": (getSign() * Math.random() * (max - min) + min) + currParticlePos.y,
+                    "z": currParticlePos.z + (forward * (Math.random() * 50 + 25)),
                     "timestamp": friend.friend_since,
                     "calledID": friend_id
                 }
                 newFriendsPos[friend.steamid] = pos
+              }
             });
-            friendsPositionProp(newFriendsPos);
             }
+            console.log("newFriends", newFriendsPos);
+            friendsPositionProp(newFriendsPos);
           }          
         }
   
         return (
-          <div className='friend-innerwrapper'>
+          <div id='friend-profile'>
             <h2>{friendProfile.personaname}</h2>
             <div id='photo-status'>
               <img id='friend-photo' src={friendProfile.avatarfull}></img>
               <div id='profile-buttons'>
                 <h4>{stateStyle[friendProfile.personastate]}</h4>
                 <div id='copy-focus'>
-                  <img src="/focus.svg" height={50} width={50} onClick={() => setNewFocus()}></img>
-                  <img src="/copy.svg" height={50} width={50} onClick={() => copyToClipboard()}></img>
+                  <img src="/images/focus.svg" height={30} width={30} onClick={() => setNewFocus()} className='cursor-pointer'></img>
+                  <img src="/images/copy.svg" height={30} width={30} onClick={() => copyToClipboard()} className='cursor-pointer'></img>
                 </div>
               </div>
             </div>
+
             {friend_since_date && <p>Friends Since: {friend_since_date}</p>}
             <p><a href={friendProfile.profileurl} target='blank'>Visit Profile</a></p>
-            {/* <button onClick={() => setNewFocus()}>Set Foucs</button> */}
             <p onClick={() => addFriends()}><a>Add Their Friends</a></p>
-            {/* <button onClick={() => addFriends()}></button> */}
             {recentGames.games && 
             <>
-              <h2>Recently Played:</h2><div className='game-container'>
+              <h2>Recently Played:</h2>
+              <div id='game-container'>
                   {recentGames.games && recentGames.games.map((game) => {
                     return (
-                      <div className='game'>
+                      <div className='game' key={game.appid}>
                         <a href={`https://store.steampowered.com/app/${game.appid}/`} target='blank'>
-                          <div className='game-data'>
+                          <div className='game-metadata'>
                             <img src={`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`} />
-  
                             <p>{game.name}</p>
                           </div>
                         </a>
@@ -253,11 +238,9 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
 }
 
 function CustomCameraControls({particlePos, cameraRef} : CameraAnimationProps){
-    // const cameraControlsRef = useRef<CameraControls>(null);
     const currentPos = new THREE.Vector3();
     
     useEffect(() => {
-      // console.log(cameraControlsRef.current?.camera.position, ":hu");
       if (cameraRef.current?.camera.position.equals(new THREE.Vector3(0,3.061616997868383e-16,5))) {
         // setLookAt( positionX, positionY, positionZ, targetX, targetY, targetZ, enableTransition )
         cameraRef.current.setLookAt(0,0,200, 0,0,0, true);
@@ -287,7 +270,6 @@ const getProfileHSL = (x: number, y: number) => {
   
 }
   
-
 interface FiberPageProps {
     steamProfileProp : SteamProfile;
     friendsListProp : FriendList;
@@ -296,28 +278,12 @@ interface FiberPageProps {
 
 export function FiberPage({steamProfileProp, friendsListProp, friendsPositionProp} : FiberPageProps) {
     const [steamProfile, setSteamProfile] = useState<SteamProfile | null>(steamProfileProp);
-
     const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
     const [friendsPos, setFriendsPos] = useState<FriendPositions | null>(friendsPositionProp);
 
-    console.log("profile", steamProfile);
-
-  console.log("flist", friendsList);
-  console.log("fpos", friendsPos);
-      
-    // const handleFriendsList = (friends : FriendList | null) => {
-    //     if (friends) {
-    //         setFriendsList(friends);
-    //     }
-    // }
+    console.log(steamProfile, friendsList, friendsPos);
     
-    //   const handleFriendsPosition = (friendsPos : FriendPositions | null) => {
-    //     if (friendsPos) {
-    //         setFriendsPos(friendsPos);
-    //     }
-    //   }
-  
-      
+
     const [displayedSteamId, setDisplayedSteamId] = useState<ParticleInfo | null>(null);
     const [profileBgColor, setBgColor] = useState<string>("#0B1829");
   
@@ -325,6 +291,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
   
     const [horizontalCamera, setHorizontalCamera] = useState<string>("right");
     const [verticalCamera, setVerticalCamera] = useState<string>("up");
+    const [freeRoamIcon, setFreeRoamIcon] = useState<string>("/images/arrow-repeat.svg");
   
   
     const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
@@ -340,25 +307,24 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const cameraControlsRef = useRef<CameraControls>(null);
   
     const [freeRoam, setFreeRoam] = useState<boolean>(false);
-  
-    // const handleSteamProfile = (myProfile : SteamProfile | null) => {
-    //   setSteamProfile(myProfile);
-    // }
-  
 
     // Next two functions are for updating both maps FriendList and FriendPos with friend's friendList data
-    const handleNewFriendsList = (newFriends : FriendList | undefined) => {
+    const handleNewFriendsList = (newFriends : FriendList | null) => {
         if (newFriends && friendsPos && friendsList) {
-            if (newFriends) {
-                const friendListClone = {... friendsList}
-                newFriends.friends.map((friend) => {
-                if (!(friend.steamid in friendsListProp || friend.steamid === steamProfile?.steamid) ) {
-                    friendListClone.friends.push(friend);            
-                }
-                })
-                // console.log("clone1", friendListClone);
-                setFriendsList(friendListClone);
-            }
+          const friendListClone = {... friendsList}
+          // console.log("og friendList", friendsList);
+          // console.log("cloneListV1", friendListClone);
+          newFriends.friends.map((friend) => {
+          if (!(friend.steamid in friendsPos || friend.steamid === steamProfile?.steamid) ) {
+              friendListClone.friends.push(friend); 
+              // console.log(friend)           
+          }
+          // else {
+            // console.log("wrong", friend);
+          // }
+          })
+          console.log("cloneList", friendListClone);
+          setFriendsList(friendListClone);
         }
     }
   
@@ -370,12 +336,12 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
             friendsPosClone[key] = newFriendsPos[key]
           }
         }
+        console.log("clonePos", friendsPosClone);
         setFriendsPos(friendsPosClone);
       }
     }
   
     const handleClick = (pInfo: ParticleInfo) => {
-      console.log("id", pInfo.pId);
       setDisplayedSteamId(pInfo);  // Update the state to trigger a rerender
       setBgColor(getProfileHSL(pInfo.x, pInfo.y))
       setSelectedFriend(pInfo.pId);
@@ -501,9 +467,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         clearInterval(intervalID.current);
         intervalID.current = null
         setFreeRoam(false)
+        setFreeRoamIcon("/images/arrow-repeat.svg");
       } else {
         intervalID.current = setInterval(freeRoamAnimation, 250) //The default smooth time for camera controls is 0.25 seconds: (.smoothTime)
         setFreeRoam(true)
+        setFreeRoamIcon("/images/pause-circle.svg")
       }       
     }
   
@@ -521,10 +489,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     }
   
     const cameraStyle = {
-      maxHeight: cameraSettings? 200 : 0,
+      maxHeight: cameraSettings? 300 : 0,
       overflow: "hidden", // very important
       transition: 'max-height 0.5s ease',
-      backgroundColor: ""
+      backgroundColor: "#0d0c1113",
+      width: "fit-content"
     } 
   
     const horizontalStyle = {
@@ -535,6 +504,9 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const verticalStyle = {
       transform: (verticalCamera === "up")? "scaleY(-1)" : "scaleY(1)",
       transition: "all 0.5 linear"
+    }
+
+    const freeRoamStyle = {
     }
   
     const toggleVerticalCamera = () => {
@@ -547,7 +519,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     }
     
     function freeRoamAnimation() {
-      // cameraControlsRef.current?.dolly(20, true)
       cameraControlsRef.current?.rotate(5 * DEG2RAD, 0, true); // This is a pretty cool spin animation
       // cameraControlsRef.current?.rotate(0,-10 * DEG2RAD, true); // This is a pretty cool spin animation
     }
@@ -558,8 +529,8 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         }
   
         return (
-            <div id='canvas-container' style={{position:"relative"}}>
-            <Canvas camera={{near: 1, far:1500} }> {/* far: 1000 seems to be when objects clip at the furthest distance*/}
+            <div id='fiberpage-container'>
+              <Canvas camera={{near: 1, far:1500} }> {/* far: 1000 seems to be when objects clip at the furthest distance*/}
                 {/* This is the user's particle */}
                 <Three position={{"x": 0,"y": 0,"z": 0,"timestamp": 0,"calledID": ""}} key={steamProfile.steamid} id={steamProfile.steamid} timestamp={0} clicked={handleClick}/>
     
@@ -570,79 +541,79 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                 
                 <CustomCameraControls particlePos={cameraPos} cameraRef={cameraControlsRef}/>
     
-                {/* <OrbitControls maxDistance={1000} enablePan={true} makeDefault/> */}
-    
                 {friendsList.friends.map((friend) => {
-                return (
-                    <Three position={friendsPos[friend.steamid]} key={friend.steamid} id={friend.steamid} timestamp={friend.friend_since} clicked={handleClick}/>
-                )
+                  return (
+                      <Three position={friendsPos[friend.steamid]} key={friend.steamid} id={friend.steamid} timestamp={friend.friend_since} clicked={handleClick}/>
+                  )
                 })}
                 {displayedSteamId && <Tube po={displayedSteamId} allPositions = {friendsPos}/>}
-            </Canvas>
-            {displayedSteamId && 
-            <>
-            <div id='friend-profile' style={friendProfileBg}>
-                <div id='friend-wrapper'>
-                <button id='form-close-btn' onClick={turnOff}>X</button>
+              </Canvas>
+
+              {displayedSteamId && 
+              <>
+              <div id='friend-container' style={friendProfileBg}>
+                <button id='friend-close-btn' onClick={turnOff}>X</button>
                 <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition}/>
-                </div>          
-            </div>
-            </>
-            }
-            {showUI && <div id='search-container'>
-                <form onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                    <input 
-                        type="submit"
-                        style={{cursor:'pointer'}}
-                    />
+              </div>
+              </>
+              }
+
+              {showUI && <>
+                <form id='search-container' onSubmit={handleSubmit}>
+                  <input
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <input 
+                      type="submit"
+                      style={{cursor:'pointer'}}
+                  />
                 </form>
-                <div> 
-                <button onClick={randomFriend}>
-                    Random Friend  
-                </button>
-                <button onClick={backToUser}>
-                    Recenter Self
-                </button>
-                </div>
-                <img onClick={toggleCameraSettings} src='/cameraSettings.svg' width={50} height={50}></img>
-                
-                <div style={cameraStyle}>
-                
-                <div className='settings-container'>
-                    <div onClick={toggleHorizontalCamera} className='camera-container'>
-                    <img src="/cameraBase.svg" width={50} height={50} className='base-camera'></img>
-                    <img src="/arrow-right.svg" width={25} height={25} style={horizontalStyle} className='arrow'></img>
+                <div id='camera-container'>
+                  <div id='select-btns'> 
+                    <img onClick={randomFriend} src='/images/shuffle.svg' width={40} height={40} className='cursor-pointer'/>  
+                    <img onClick={backToUser} src='/images/focus.svg' width={40} height={40} className='cursor-pointer'/>  
+                  </div>
+
+                  <img id='toggleCameraSettings' onClick={toggleCameraSettings} src='/images/cameraSettings.svg' width={50} height={50} className='cursor-pointer'></img>
+                  
+                  <div style={cameraStyle}>                    
+                    <div className='settings-container'>
+                      <div onClick={toggleHorizontalCamera} className='camera-container'>
+                        <img src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer'></img>
+                        <img src="/images/arrow-right.svg" width={25} height={25} style={horizontalStyle} className='arrow cursor-pointer'></img>
+                      </div>
+                      <div id='horizontal-degrees'>
+                        <button onClick={fourdegrees}>45°</button>
+                        <button onClick={ninedegrees}>90°</button>
+                        <button onClick={hundreddegrees}>180°</button>
+                      </div>
                     </div>
-                    <button onClick={fourdegrees}>45o</button>
-                    <button onClick={ninedegrees}>90o</button>
-                    <button onClick={hundreddegrees}>180o</button>
-                </div>
-    
-                <div className='settings-container'>
-                    <div onClick={toggleVerticalCamera} className='camera-container'>
-                    <img src="/cameraBase.svg" width={50} height={50} className='base-camera'></img>
-                    <img src="/arrow-up.svg" width={25} height={25} style={verticalStyle} className='arrow'></img>
+        
+                    <div className='settings-container'>
+                        <div onClick={toggleVerticalCamera} className='camera-container cursor-pointer'>
+                          <img src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer'></img>
+                          <img src="/images/arrow-up.svg" width={25} height={25} style={verticalStyle} className='arrow cursor-pointer'></img>
+                        </div>
+                        <button id='fortyfive-degrees' onClick={fourdegreesUp}>45°</button>
                     </div>
-                    <button onClick={fourdegreesUp}>45oup</button>
-                </div>
-                <div>
-                    <img onClick={zoomIn} src='/zoom-in.svg' width={30} height={30}></img>
-                    <img onClick={zoomOut} src='/zoom-out.svg' width={30} height={30}></img>
-                </div>
-                <div>
-                    <img onClick={handleFreeRoam} src='/cameraSettings.svg' width={50} height={50}></img>
-                </div>
-                <br/>
-                <button onClick={hideUI}>Hide UI</button>
-                {/* <button onClick={goHome}>Home</button> */}
-                </div>
-    
-            </div>
+                    <div id='zoom-btns'>
+                        <img onClick={zoomIn} src='/images/zoom-in.svg' width={30} height={30} className='cursor-pointer'></img>
+                        <img onClick={zoomOut} src='/images/zoom-out.svg' width={30} height={30} className='cursor-pointer'></img>
+                    </div>
+                    <div>
+                        {/* <img onClick={handleFreeRoam} src='/images/cameraSettings.svg' width={50} height={50}></img> */}
+                      <div onClick={handleFreeRoam} className='camera-container'>
+                        <img src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer'></img>
+                        <img src={freeRoamIcon} width={25} height={25} className='arrow cursor-pointer'></img>
+                      </div>
+                    </div>
+                    <img onClick={hideUI} src='/images/hide.svg' width={50} height={50} className='cursor-pointer'></img>
+                  </div>
+      
+              </div>
+              </>
             }
             </div>
         )

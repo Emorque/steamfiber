@@ -54,7 +54,7 @@ export function Tube({po, allPositions} : TubeProps) {
     return (
         friendAdjList.map((coordiantes) => {
             return (
-                <TubeInstance position={coordiantes}/>
+                <TubeInstance position={coordiantes} key={coordiantes.toString()}/>
             )
         })
     )
