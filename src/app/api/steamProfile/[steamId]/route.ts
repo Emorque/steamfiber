@@ -14,14 +14,16 @@ export async function GET(request: Request, { params } : { params : {steamId: st
         }});
     
         if (!res.ok) { //https://nextjs.org/docs/app/building-your-application/routing/error-handling
-            return 'There was an error.'
+            return NextResponse.json({error: 'Player not found'}, {status: 500})
         }
     
         const steamProfile = await res.json();
-        // console.log(steamProfile);
-    
-        if (!steamProfile.response.players || steamProfile.response.players === 0) {
-            return NextResponse.json({error: 'Player not found'}, {status: 500})
+
+        if (!steamProfile.response.players) {
+            return NextResponse.json({error: 'Player has a private profile'}, {status: 500})
+        }
+        else if (steamProfile.response.players === 0) {
+            return NextResponse.json({error: 'Player has no friends to display'}, {status: 500})
         }
         
         return NextResponse.json(steamProfile.response.players);    

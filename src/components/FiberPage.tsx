@@ -251,7 +251,7 @@ function CustomCameraControls({particlePos, cameraRef} : CameraAnimationProps){
       else {
         cameraRef.current?.setLookAt(particlePos[0],particlePos[1],particlePos[2] + 200, particlePos[0],particlePos[1],particlePos[2], true);
       }
-    }, [particlePos, cameraRef]);
+    }, [particlePos, cameraRef, currentPos]);
   
     return(<CameraControls
       enabled={true}
@@ -280,6 +280,8 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const [steamProfile] = useState<SteamProfile | null>(steamProfileProp);
     const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
     const [friendsPos, setFriendsPos] = useState<FriendPositions | null>(friendsPositionProp);
+
+    console.log(steamProfile, friendsList, friendsPos);
 
     const [displayedSteamId, setDisplayedSteamId] = useState<ParticleInfo | null>(null);
     const [profileBgColor, setBgColor] = useState<string>("#0B1829");
@@ -377,10 +379,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         // Getting a random id
         const friend_ids = Object.keys(friendsPos);
         const friend_ids_length = friend_ids.length;
-        const random_friend = Math.floor(Math.random() * (friend_ids_length + 1));
+        const random_friend = Math.floor(Math.random() * (friend_ids_length));
   
         // Get the info and set the corresponding states
         const position = friendsPos[friend_ids[random_friend]];
+        console.log('position info: ', position);
         const info : ParticleInfo = {
           pId: friend_ids[random_friend],
           friend_since : position.timestamp,
