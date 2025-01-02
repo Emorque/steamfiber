@@ -1,0 +1,257 @@
+/* import "./homepage.css";
+ */
+#fiberpage-container {
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+#friend-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    top:0px;
+    right:0;
+    height: fit-content;
+    margin: 0;
+    height: 100%;
+    padding: 10px;
+    width: 30%;
+    overflow-y : auto;
+    background-color: #0d0c1113;
+    scrollbar-color: black white;
+    scrollbar-width: thin;
+    max-width: 400px;
+    min-width: 150px;
+}
+  
+
+#friend-close-btn {
+    background-color: #1d242c;
+    color: white;
+    border: solid 1px #8f8f8f;
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    z-index: 10;
+    font-weight: bold;
+    font-size: large;
+    cursor: pointer;
+    padding: 1px 6px;
+}
+
+#friend-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    width: 100%;
+    padding-top: 40px;
+}
+
+
+#photo-status {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+} 
+ 
+#friend-photo{
+    height: 64px;
+    width: 64px;
+}
+  
+#profile-buttons {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    /* gap: 10px; */
+}
+
+#copy-focus {
+    display: flex;
+    gap: 10px;
+}
+  
+#game-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.game {
+    background-color: #03070C;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+} 
+
+
+.game-metadata {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-bottom: 10px;
+}
+
+#search-container {
+    position: absolute;
+    top:10px;
+    left:10px;
+}
+
+#camera-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top:40px;
+    left:10px;
+    gap: 5px;
+}
+
+#select-btns {
+    display: flex;
+    gap: 10px;
+    width: fit-content;
+    button {
+        background-color: #1d242c;
+        color: white;
+        border: solid 1px #8f8f8f;
+        padding: 1px 6px;
+    }
+}
+
+#toggleCameraSettings {
+    background-color: #0d0c1113;
+}
+
+.settings-container {
+    display: flex;
+    position: relative;
+    align-items: center;
+    gap: 10px;
+    div {
+        display: flex;
+        gap: 5px;
+    }
+    button {
+        /* padding:0px;
+        margin: 0px; */
+        background-color: #1d242c;
+        color: white;
+        border: solid 1px #8f8f8f;
+        padding: 1px 6px;
+    }
+}
+  
+.camera-container {
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+    /* background-color: red; */
+}
+
+.base-camera {
+  
+}
+
+.arrow {
+    position: absolute;
+    right:0;
+    transform: translate(10px,10px);
+    width: fit-content;
+    height: fit-content;
+}
+
+#zoom-btns {
+    display: flex;
+    gap: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+a {
+    cursor: pointer;
+}
+
+#horizontal-degrees {
+    display: flex;
+    flex-direction: column;
+}
+
+#fortyfive-degrees {
+    padding: 1px 10px;
+}
+
+button,.cursor-pointer{
+    cursor: pointer;
+}
+
+/* h2 {
+    font-size: 1rem;
+}
+
+h4 {
+    font-size: 1rem;
+}
+
+p {
+    font-size: 0.8rem;
+} */
+/*  */
+
+input[type="text"] {
+    /* background-color: #1d242c; */
+    color: black;
+    border: solid 1px #8f8f8f;
+    padding: 1px 6px;
+    /* width: 150px; */
+    width: 100px;
+}
+
+@media (min-width: 1050px) {
+    #friend-container {
+        width: 25%;
+    }
+
+}
+
+@media (min-width: 700px) {
+    #friend-container {
+        width: 25%;
+    }
+    #friend-photo{
+        height: 100px;
+        width: 100px;
+    }
+    #photo-status {
+        flex-direction: row;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h4 {
+        font-size: 1rem;
+    }
+
+    p {
+        font-size: 1rem;
+    }     
+    #copy-focus {
+        flex-direction: column;
+    }
+}
+
+@media (min-width: 600px) {
+    #friend-profile {
+        padding-top: 6px;
+    }
+    input[type="text"] {
+        width: 150px;
+    }
+    
+}

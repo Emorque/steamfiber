@@ -1,9 +1,6 @@
 import { useState, useRef } from "react";
 
 import { FriendList, Friend, SteamProfile, FriendPositions } from '@/components/types'; // Getting types
-// import { getSteamProfile, getFriendsList } from "@/api/steam_api";
-// import { getSteamProfile, getFriendsList } from "@/api/steamapi";
-// import { getSteamProfile, getFriendsList } from "@/app/api/steamapi";
 import { getSteamProfile, getFriendsList } from "./steamapi";
 
 
@@ -58,7 +55,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const handleInfo = () => {
         setInfoComponent(!infoComponent);
         setHelpComponent(false);
-        console.log(infoComponent);
     }
 
     // Extra styles dependent on states
@@ -167,7 +163,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                         <p>3. Your Steam ID is below your username</p>
                         
                         <br/>
-                        <img src="/images/steamId.png"></img>
+                        <img src="/images/account.webp"></img>
                     </div>
                 )}    
 
