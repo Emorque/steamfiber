@@ -1,4 +1,6 @@
-import { FriendList, SteamProfile, FriendPositions, RecentlyPlayed } from '@/components/types'; // Getting types
+// 76561198066405189  - Person with 2000 Friends
+
+import { FriendList, SteamProfile, FriendPositions, RecentlyPlayed, FriendsAdded } from '@/components/types'; // Getting types
 import { Canvas, useFrame } from '@react-three/fiber'
 import { CameraControls, } from '@react-three/drei';
 import { useState, useRef, useEffect} from "react";
@@ -39,6 +41,7 @@ interface FriendProps {
     allPositions: FriendPositions;
     friendsListProp: (newFriends : FriendList | null) => void;
     friendsPositionProp: (newFriendsPos : FriendPositions | null) => void;
+    friendsAddedProp: FriendsAdded;
 }
 
 interface CameraAnimationProps {
@@ -121,10 +124,11 @@ const stateStyle: {[id: number] : string} = {
 }
  
   
-function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsListProp, friendsPositionProp}  : FriendProps ) {
+function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsListProp, friendsPositionProp, friendsAddedProp}  : FriendProps ) {
     const [friendProfile, setFriendProfile] = useState< SteamProfile | null>(null);
     const [recentGames, setRecentGames] = useState< RecentlyPlayed | null>(null);
-  
+    const [error, setError] = useState< string | null >(null)
+
     let friend_since_date = new Date(friend_since * 1000).toLocaleDateString('en-Us', { month: 'short', year: 'numeric', day: 'numeric' });
     if (friend_since_date === "Dec 31, 1969") { //This is the starting point of the UNIX timestamp. Only applicable to the user
       friend_since_date = ""
@@ -132,6 +136,25 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
   
     const getSign = () => {
       return Math.random() < 0.5 ? 1 : -1
+    }
+
+    const errorStyle = {
+      opacity: error? 1 : 0,
+      transform: error? "translate(10px,10px)" : "translate(10px,0px)",
+      transition: "all 0.25s linear",
+    }
+
+    const errorFunc = (err: string) => {
+      // if (friendsAddedProp[friend_id]) {
+        // setError("Friends Already Added");
+      // }
+      // else {
+        // setError("Private Profile");
+      // }
+      setError(err)
+      setTimeout(() => {
+        setError(null)
+      }, 1500);
     }
   
     useEffect(() => { ( 
@@ -146,7 +169,6 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
       }, [friend_id])//The dependency array [friend_id] executes this await function call whenever the friend_id from FriendProps changes. i.e., when a different particle is cliked. If the friend_id is the same, no new await call is made
   
     // https://react.dev/reference/rsc/server-components
-  
       if (friendProfile && recentGames) {
         const setNewFocus = () => {
           const currParticlePos = allPositions[friend_id]
@@ -158,7 +180,15 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
         }
   
         const addFriends = async () => {
-
+          // if (allPositions.length)
+          if (Object.keys(allPositions).length > 2000) {
+            errorFunc("Friend Limit Reached");
+            return;
+          }
+          if (friend_id in friendsAddedProp) {
+            errorFunc("Friends Already Added");
+            return;
+          }
           const friendsFriendList = await getFriendsList(friend_id);
           if (friendsFriendList) {
             const currParticlePos = allPositions[friend_id]
@@ -184,8 +214,12 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
               }
             });
             }
-            console.log("newFriends", newFriendsPos);
+            friendsAddedProp[friend_id] = true;
             friendsPositionProp(newFriendsPos);
+          }
+          else {
+            friendsAddedProp[friend_id] = false;
+            errorFunc("Private Profile");
           }          
         }
   
@@ -205,7 +239,11 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
 
             {friend_since_date && <p>Friends Since: {friend_since_date}</p>}
             <p><a href={friendProfile.profileurl} target='blank'>Visit Profile</a></p>
-            <p onClick={() => addFriends()}><a>Add Their Friends</a></p>
+            <div style={{position: "relative"}}>
+              <p onClick={() => addFriends()} style={{zIndex: 20, position: "relative"}}><a>Add Their Friends</a></p>
+
+              {<p id='error-text' style={errorStyle}>{error}</p>}
+            </div>
             {recentGames.games && 
             <>
               <h2>Recently Played:</h2>
@@ -251,7 +289,7 @@ function CustomCameraControls({particlePos, cameraRef} : CameraAnimationProps){
       else {
         cameraRef.current?.setLookAt(particlePos[0],particlePos[1],particlePos[2] + 200, particlePos[0],particlePos[1],particlePos[2], true);
       }
-    }, [particlePos, cameraRef, currentPos]);
+    }, [particlePos, cameraRef]); // Adding currentPos resets back to the main user
   
     return(<CameraControls
       enabled={true}
@@ -274,38 +312,30 @@ interface FiberPageProps {
     steamProfileProp : SteamProfile;
     friendsListProp : FriendList;
     friendsPositionProp : FriendPositions;
+    friendsAddedProp : FriendsAdded
 }
 
-export function FiberPage({steamProfileProp, friendsListProp, friendsPositionProp} : FiberPageProps) {
-    const [steamProfile] = useState<SteamProfile | null>(steamProfileProp);
+export function FiberPage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp} : FiberPageProps) {
+    const [steamProfile] = useState<SteamProfile>(steamProfileProp);
     const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
     const [friendsPos, setFriendsPos] = useState<FriendPositions | null>(friendsPositionProp);
-
-    console.log(steamProfile, friendsList, friendsPos);
+   const friendsAdded = friendsAddedProp;
 
     const [displayedSteamId, setDisplayedSteamId] = useState<ParticleInfo | null>(null);
+
+    // Styling States
     const [profileBgColor, setBgColor] = useState<string>("#0B1829");
-  
     const [cameraSettings, setCameraSettings] = useState<boolean>(false);
-  
     const [horizontalCamera, setHorizontalCamera] = useState<string>("right");
     const [verticalCamera, setVerticalCamera] = useState<string>("up");
     const [freeRoamIcon, setFreeRoamIcon] = useState<string>("/images/arrow-repeat.svg");
-  
-  
-    // const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
-  
-    const [cameraPos, setCameraPos] = useState<[number, number, number] | [0,0,0]>([0,0,0]);
-  
     const [showUI, setUI] = useState<boolean>(true);
-  
-    // const [starting, setStarting] = useState<boolean>(false); // TO DO: remove this state, I don't believe it is used
-  
     const [search, setSearch] = useState<string>('');
-  
-    const cameraControlsRef = useRef<CameraControls>(null);
-  
     const [freeRoam, setFreeRoam] = useState<string>("free roam");
+
+    const cameraControlsRef = useRef<CameraControls>(null);
+    const [cameraPos, setCameraPos] = useState<[number, number, number] | [0,0,0]>([0,0,0]);
+
 
     // Next two functions are for updating both maps FriendList and FriendPos with friend's friendList data
     const handleNewFriendsList = (newFriends : FriendList | null) => {
@@ -316,7 +346,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
               friendListClone.friends.push(friend); 
           }
           })
-          console.log("cloneList", friendListClone);
           setFriendsList(friendListClone);
         }
     }
@@ -329,7 +358,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
             friendsPosClone[key] = newFriendsPos[key]
           }
         }
-        console.log("clonePos", friendsPosClone);
         setFriendsPos(friendsPosClone);
       }
     }
@@ -337,7 +365,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const handleClick = (pInfo: ParticleInfo) => {
       setDisplayedSteamId(pInfo);  // Update the state to trigger a rerender
       setBgColor(getProfileHSL(pInfo.x, pInfo.y))
-      // setSelectedFriend(pInfo.pId);
   
       setUI(true);
     }
@@ -345,7 +372,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const turnOff = () => {
       setDisplayedSteamId(null);
       setBgColor("#0B1829");
-      // setSelectedFriend(null);
     }
   
     const handleSubmit = async (event : React.FormEvent) => {
@@ -363,10 +389,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
 
           setDisplayedSteamId(info);
           setBgColor(getProfileHSL(info.x,info.y));
-          // setSelectedFriend(search);
-
           setCameraPos([position.x, position.y, position.z]);
-          // setStarting(true)
         }
         else {
           alert('Friend Id not Found');
@@ -383,7 +406,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
   
         // Get the info and set the corresponding states
         const position = friendsPos[friend_ids[random_friend]];
-        console.log('position info: ', position);
         const info : ParticleInfo = {
           pId: friend_ids[random_friend],
           friend_since : position.timestamp,
@@ -393,7 +415,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         }
         setDisplayedSteamId(info);
         setBgColor(getProfileHSL(info.x,info.y));
-        // setSelectedFriend(null);
         setCameraPos([position.x, position.y, position.z]);
       }
   
@@ -446,13 +467,9 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       cameraControlsRef.current?.rotate(0, 45 * DEG2RAD * (sign), true); // This is a pretty cool spin animation without the DEG2RAD
     }
   
-    const zoomIn = () => {
-      cameraControlsRef.current?.dolly(45, true);
-    }
+    const zoomIn = () => { cameraControlsRef.current?.dolly(45, true); }
   
-    const zoomOut = () => {
-      cameraControlsRef.current?.dolly(-45, true);
-    }
+    const zoomOut = () => { cameraControlsRef.current?.dolly(-45, true); }
     
     const intervalID = useRef<number | null | NodeJS.Timeout>(null); //NodeJS.Timeout needed in this nextjs app
   
@@ -469,9 +486,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       }       
     }
   
-    const toggleCameraSettings = () => {
-      setCameraSettings(!cameraSettings);
-    }
+    const toggleCameraSettings = () => { setCameraSettings(!cameraSettings); }
   
     const toggleHorizontalCamera = () => {
       if (horizontalCamera === "right") {
@@ -544,7 +559,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
               <>
               <div id='friend-container' style={friendProfileBg}>
                 <button id='friend-close-btn' onClick={turnOff}>X</button>
-                <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition}/>
+                <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded}/>
               </div>
               </>
               }
@@ -552,7 +567,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
               {showUI && <>
                 <form id='search-container' onSubmit={handleSubmit}>
                   <input
-                      type="text"
+                      type="number"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                   />

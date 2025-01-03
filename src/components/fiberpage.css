@@ -179,11 +179,34 @@ button,.cursor-pointer{
     cursor: pointer;
 }
 
-input[type="text"] {
+input[type="number"] {
     color: black;
     border: solid 1px #8f8f8f;
     padding: 1px 6px;
     width: 100px;
+}
+
+#error-text {
+    position: absolute;
+    left: -10px;
+    top: 20px;
+    background-color: #1d242c;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+#error-text::before {
+    position: absolute;
+    /* background-color: blue; */
+    content: "";
+    width: 0px;
+    height: 0px;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 15px solid #1d242c;
+    /* z-index: 1; */
+    top:-15px;
+    left: 25px;
 }
 
 @media (min-width: 1050px) {

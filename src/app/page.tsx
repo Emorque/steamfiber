@@ -2,7 +2,7 @@
 import { useState} from 'react'
 
  // Getting types
-import { FriendList, SteamProfile, FriendPositions } from '@/components/types';
+import { FriendList, SteamProfile, FriendPositions, FriendsAdded } from '@/components/types';
 
 // Components 
 import { HomePage } from '@/components/HomePage'; 
@@ -13,6 +13,7 @@ export default function Home() {
   const [steamProfile, setSteamProfile] = useState<SteamProfile | null>(null);
   const [friendsList, setFriendsList] = useState<FriendList | null>(null);
   const [friendsPositions, setFriendsPositions] = useState<FriendPositions | null>(null);
+  const [friendsAdded, setFriendsAdded] = useState<FriendsAdded | null>(null);
 
   // Accompanying function handles to communicate with the HomePage component:
   const handleSteamProfile = (userProfile : SteamProfile | null) => {
@@ -22,15 +23,17 @@ export default function Home() {
   const handleFriendsList = (friends : FriendList | null) => { setFriendsList(friends) }
 
   const handleFriendsPosition = (friendsPos : FriendPositions | null) => { setFriendsPositions(friendsPos) }
+
+  const handleFriendsAdded = (originalUser : FriendsAdded | null) => { setFriendsAdded(originalUser) }
   
-  if (steamProfile && friendsList && friendsPositions) {
+  if (steamProfile && friendsList && friendsPositions && friendsAdded) {
     return (
-      <FiberPage steamProfileProp={steamProfile} friendsListProp = {friendsList} friendsPositionProp = {friendsPositions}/>
+      <FiberPage steamProfileProp={steamProfile} friendsListProp = {friendsList} friendsPositionProp = {friendsPositions} friendsAddedProp = {friendsAdded}/>
     )
   }
   else {
     return (
-      <HomePage steamProfileProp={handleSteamProfile} friendsListProp = {handleFriendsList} friendsPositionProp = {handleFriendsPosition}/>
+      <HomePage steamProfileProp={handleSteamProfile} friendsListProp = {handleFriendsList} friendsPositionProp = {handleFriendsPosition}  friendsAddedProp= {handleFriendsAdded}/>
     )
   }
 }
