@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { FriendList, Friend, SteamProfile, FriendPositions } from '@/components/types'; // Getting types
+import { FriendList, Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions } from '@/components/types'; // Getting types
 import { getSteamProfile, getFriendsList } from "./steamapi";
 
 
@@ -9,42 +9,46 @@ import { HpParticle } from "./HpParticle";
 
 import "./homepage.css";
 
-// import { gsap } from "gsap";
-
 interface HomePageProps {
     steamProfileProp : (userProfile: SteamProfile | null ) => void;
     friendsListProp : (friends : FriendList | null) => void;
     friendsPositionProp : (friendsPos : FriendPositions | null) => void;
+    friendsAddedProp : (originalUser : FriendsAdded | null) => void;
 }
 
 function getSign() : number {
     return Math.random() < 0.5 ? 1: -1
 }
 
-export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp} : HomePageProps) {
+function validId(steam_id: string) {
+    if (steam_id.length !== 17 && steam_id.length !== 16) {
+        return false
+    }
+    for (let i = 0; i < steam_id.length; i++){
+        if (!(steam_id[i] >= '0' && steam_id[i] <= '9' )){
+            return false
+        }
+    }
+    return true
+}
+
+export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp} : HomePageProps) {
     const [steamId, setSteamId] = useState<string>('');
 
     // States for styling
     const [helpComponent, setHelpComponent] = useState<boolean>();
     const [infoComponent, setInfoComponent] = useState<boolean>(false);
     const [disabledButton, setDisabledButton] = useState<boolean>(false);
-    const [emptyError, setError] = useState<boolean>(false);
-    const [idError, setIdError] = useState<boolean>(false);
+
+    const [idError, setIdError] = useState< string | null >(null)
     const [animation, startAnimation] = useState<boolean>(false);
 
-    // Nothing entered in input
-    function EmptyError() {
-        setError(true)
-        setTimeout(() => {
-            setError(false)
-        }, 2000);
-    }
+    const [checkedIds] = useState<IdSubmissions>(new Set<string>());
 
-    // Invalid Id is entered in input
-    function SteamIdError() {
-        setIdError(true)
+    function SteamIdError(error_message : string) {
+        setIdError(error_message)
         setTimeout(() => {
-            setIdError(false)
+            setIdError(null)
         }, 2000);
     }
 
@@ -65,18 +69,26 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const disappearStyle = {
         opacity: animation? 0: 1,
         transition: 'all 1s ease',
-        // pointer-events: none
     }
 
     const errorStyle = {
-        backgroundColor: (emptyError|| idError)? "rgb(243, 81, 81)" : "white",
+        backgroundColor: idError? "rgb(243, 81, 81)" : "white",
         transition: 'all 0.5s ease'
     }
 
     const handleSubmit = async (event : React.FormEvent) => {
         event.preventDefault();
+        // console.log(checkedIds);
+        if (!validId(steamId)) {
+            SteamIdError("Invalid Steam ID");
+            return
+        }
         if (!(steamId)) {
-            EmptyError();
+            SteamIdError("Please Enter your Steam ID");
+            return
+        }
+        if (checkedIds.has(steamId)) {
+            SteamIdError("Enter a different Steam ID");
             return
         }
         const steamProfile = await getSteamProfile(steamId);
@@ -85,7 +97,8 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
             startAnimation(true);
             setDisabledButton(true);
         } else {
-            SteamIdError();
+            checkedIds.add(steamId);
+            SteamIdError("Invalid Steam ID");
             return;
         }
 
@@ -118,7 +131,9 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                 }
                 friendsPositionProp(friendsPos);
                 }
-            }          
+                const originalUser = {[steamId] : true}
+                friendsAddedProp(originalUser);          
+            }
         }, 5000);
     };
     
@@ -129,7 +144,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
 
                 <div id="title" style={opacityStyle}>
                     <img src="/images/steamfiber.svg" height={64} width={64} fetchPriority='low' alt="Steam Fiber Logo"></img>
-                    <h1>SteamCircle</h1>
+                    <h1>SteamFiber</h1>
                 </div>
                 
                 
@@ -137,7 +152,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                     <p>Enter Steam ID:</p>
                     <form onSubmit={handleSubmit}> 
                         <input
-                            type="text"
+                            type="number"
                             style={errorStyle}
                             value={steamId}
                             onChange={(e) => setSteamId(e.target.value)}
@@ -149,8 +164,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                     </form>
                     <div>
                         <button onClick={showHelpComponent} id="form-button" disabled={disabledButton}>Don&apos;t Know?</button>
-                        {emptyError && (<p className="error-text">Please Enter your Steam ID</p>)}
-                        {idError && (<p className="error-text">Invalid Steam ID</p>)}
+                        {idError && (<p className="error-text">{idError}</p>)}
                     </div>
                 </div>
 

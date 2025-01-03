@@ -39,3 +39,9 @@ export type RecentlyPlayed = {
     "total_count": number;
     "games" : [GamesInfo]
 }
+
+export type FriendsAdded = {
+    [id: string] : boolean
+}
+
+export type IdSubmissions = Set<string>;

@@ -43,7 +43,6 @@ export function Tube({po, allPositions} : TubeProps) {
 
     while (start.x !== 0 && start.y !== 0 && start.z !== 0) {
         friendPos = allPositions[start.calledID]
-        console.log(start, friendPos);
         tubeCoordinates = [start.x, start.y, start.z, friendPos.x,friendPos.y,friendPos.z]
         friendAdjList.push(tubeCoordinates)
         start = friendPos
