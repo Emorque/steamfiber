@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic' // defaults to auto
 import { NextResponse } from 'next/server';
 
 const steam_key = process.env.STEAM_WEB_API;
@@ -41,7 +40,18 @@ export async function GET(request: Request, { params } : { params : {steamId: st
             return NextResponse.json({error: 'Player has no friends to display'}, {status: 500})
         }
         
-        return NextResponse.json(steamProfile.response.players);    
+        return NextResponse.json(
+            steamProfile.response.players,
+            {
+              status: 200,
+              headers: {
+                // public: This response is allowed to be cached by anything
+                // max-age=3600: The response is considered "fresh" for 3600 seconds (1 hour), after which it's considered "stale"
+                // stale-while-revalidate=60: After the data is considered stale, it's allowed to serve stale content for an additional 60 seconds while it fetches fresh content in the bg
+                'Cache-Control': 'public, max-age=3600, stale-while-revalidate=60'
+              },
+            }
+          )
     }
     catch (error) {
         console.error(error);
