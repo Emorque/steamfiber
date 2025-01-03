@@ -55,8 +55,6 @@ function Three({position, id, timestamp, clicked} : LabelProps){
     // const textRef = useRef<THREE.Mesh>(null!);
     const [active, setActive] = useState(false);
 
-    // const { camera } = useThree();
-
     useFrame(() => {
         // Rotate the mesh continuously
         if (ref.current) ref.current.rotation.x += 0.01;
@@ -145,12 +143,6 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
     }
 
     const errorFunc = (err: string) => {
-      // if (friendsAddedProp[friend_id]) {
-        // setError("Friends Already Added");
-      // }
-      // else {
-        // setError("Private Profile");
-      // }
       setError(err)
       setTimeout(() => {
         setError(null)
@@ -431,7 +423,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         }
         setDisplayedSteamId(userInfo);
         setBgColor("#0B1829");
-        // setSelectedFriend(null);
         setCameraPos([0,0,0]);
       }
     }
@@ -609,7 +600,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                         <img fetchPriority='low' onClick={zoomOut} src='/images/zoom-out.svg' width={30} height={30} className='cursor-pointer' alt='Click to zoom out'></img>
                     </div>
                     <div>
-                        {/* <img onClick={handleFreeRoam} src='/images/cameraSettings.svg' width={50} height={50}></img> */}
                       <div onClick={handleFreeRoam} className='camera-container'>
                         <img fetchPriority='low' src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer' alt='base camera image'></img>
                         <img fetchPriority='low' src={freeRoamIcon} width={25} height={25} className='arrow cursor-pointer' alt={`Currently toggled to ${freeRoam} on click`}></img>

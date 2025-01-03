@@ -9,8 +9,6 @@ import { HpParticle } from "./HpParticle";
 
 import "./homepage.css";
 
-// import { gsap } from "gsap";
-
 interface HomePageProps {
     steamProfileProp : (userProfile: SteamProfile | null ) => void;
     friendsListProp : (friends : FriendList | null) => void;
@@ -41,13 +39,11 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const [helpComponent, setHelpComponent] = useState<boolean>();
     const [infoComponent, setInfoComponent] = useState<boolean>(false);
     const [disabledButton, setDisabledButton] = useState<boolean>(false);
-    // const [emptyError, setError] = useState<boolean>(false);
-    // const [idError, setIdError] = useState<boolean>(false);
+
     const [idError, setIdError] = useState< string | null >(null)
     const [animation, startAnimation] = useState<boolean>(false);
 
-    // const checkedIds : IdSubmissions = new Set<string>();
-    const [checkedIds, setCheckedIds] = useState<IdSubmissions>(new Set<string>());
+    const [checkedIds] = useState<IdSubmissions>(new Set<string>());
 
     function SteamIdError(error_message : string) {
         setIdError(error_message)
@@ -73,7 +69,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const disappearStyle = {
         opacity: animation? 0: 1,
         transition: 'all 1s ease',
-        // pointer-events: none
     }
 
     const errorStyle = {
@@ -169,7 +164,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                     </form>
                     <div>
                         <button onClick={showHelpComponent} id="form-button" disabled={disabledButton}>Don&apos;t Know?</button>
-                        {/* {emptyError && (<p className="error-text">Please Enter your Steam ID</p>)} */}
                         {idError && (<p className="error-text">{idError}</p>)}
                     </div>
                 </div>
