@@ -10,7 +10,7 @@
     flex-direction: column;
     align-items: center;
     top:0px;
-    right:0;
+    right:-1px;
     height: fit-content;
     margin: 0;
     height: 100%;
@@ -46,6 +46,7 @@
     height: 100%;
     width: 100%;
     padding-top: 40px;
+    /* overflow: hidden; */
 }
 
 
@@ -183,7 +184,7 @@ input[type="number"] {
     color: black;
     border: solid 1px #8f8f8f;
     padding: 1px 6px;
-    width: 100px;
+    width: 125px;
 }
 
 #error-text {
@@ -209,6 +210,18 @@ input[type="number"] {
     left: 25px;
 }
 
+h2 {
+    font-size: 1.25rem;
+}
+
+h4 {
+    font-size: 0.8rem;
+}
+
+p {
+    font-size: 0.8rem;
+} 
+
 @media (min-width: 1050px) {
     #friend-container {
         width: 25%;
@@ -227,6 +240,10 @@ input[type="number"] {
     #photo-status {
         flex-direction: row;
     }
+
+    #friend-profile {
+        padding-top: 6px;
+    }
     
     h2 {
         font-size: 1.5rem;
@@ -244,12 +261,8 @@ input[type="number"] {
     }
 }
 
-@media (min-width: 600px) {
-    #friend-profile {
-        padding-top: 6px;
-    }
-    input[type="text"] {
+@media (min-width: 400px) {
+    input[type="number"] {
         width: 150px;
-    }
-    
+    } 
 }
