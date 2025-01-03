@@ -1,6 +1,20 @@
 import { FriendList, SteamProfile, RecentlyPlayed } from '@/components/types'; // Getting types
 
+function validId(steam_id: string) {
+    if (steam_id.length !== 17 && steam_id.length !== 16) {
+        return false
+    }
+    for (let i = 0; i < steam_id.length; i++){
+        if (!(steam_id[i] >= '0' && steam_id[i] <= '9' )){
+            return false
+        }
+    }
+    return true
+}
+
 export async function getSteamProfile(steam_id: string) : Promise<SteamProfile | null> {
+    if (!validId) return null;
+    
     if (!steam_id) {
         return null
     }
@@ -16,6 +30,8 @@ export async function getSteamProfile(steam_id: string) : Promise<SteamProfile |
 }
 
 export async function getFriendsList(steam_id: string) : Promise<FriendList | null> {
+    if (!validId) return null;
+    
     try {
         const response = await fetch(`/api/friendList/${steam_id}`);
         if (!response.ok) {
@@ -33,6 +49,8 @@ export async function getFriendsList(steam_id: string) : Promise<FriendList | nu
 
 
 export async function getRecentGames(steam_id: string) : Promise<RecentlyPlayed | null> {
+    if (!validId) return null;
+    
     try {
         const response = await fetch(`/api/recentGames/${steam_id}`);
         if (!response.ok) {
