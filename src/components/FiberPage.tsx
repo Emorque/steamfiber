@@ -3,7 +3,7 @@
 import { FriendList, SteamProfile, FriendPositions, RecentlyPlayed, FriendsAdded } from '@/components/types'; // Getting types
 import { Canvas, useFrame } from '@react-three/fiber'
 import { CameraControls, } from '@react-three/drei';
-import { useState, useRef, useEffect} from "react";
+import { useState, useRef, useEffect, useMemo} from "react";
 
 import { getSteamProfile, getFriendsList, getRecentGames } from "./steamapi";
 import { Tube } from './Tube';
@@ -12,6 +12,9 @@ import "./fiberpage.css"
 
 import * as THREE from 'three'
 import { DEG2RAD } from 'three/src/math/MathUtils.js'
+
+import { Vertex } from '@/shaders/vertex';
+import { Fragment } from '@/shaders/fragment';
 
 interface ParticleInfo {
     pId: string,
@@ -49,16 +52,51 @@ interface CameraAnimationProps {
     cameraRef: React.RefObject<CameraControls>;
   }
 
+  
+const getHSL = (x: number, y: number) => {
+  // HSL color values are specified with: hsl(hue, saturation, lightness)
+  // Hue: The position of a color on the color wheel, represented as an angle in degrees. Red is 0°, green is 120°, and blue is 240°.
+  // Saturation: The intensity of a color, represented as a percentage. 100% is full saturation, and 0% is a shade of gray.
+  // Lightness: The brightness of a color, represented as a percentage. 100% lightness is white, 0% lightness is black, and 50% lightness is normal.
+  if (x === 0 && y === 0 || x === 100 && y === 100|| x === -100 && y === -100 ) {
+    return `hsl(0, 0%, 100%)`; 
+  }
+  const hue = ((Math.atan2(y, x) * 180) / Math.PI) + 180;
+  const saturation = (Math.sqrt(x**2 + y**2));
+  const lightness = "50%";
+  return `hsl(${hue}, ${saturation + 70}%, ${lightness})`;
+
+}
+
 function Three({position, id, timestamp, clicked} : LabelProps){
     // This reference will give us direct access to the THREE.Mesh object
     const ref = useRef<THREE.Mesh>(null!);
     // const textRef = useRef<THREE.Mesh>(null!);
     const [active, setActive] = useState(false);
 
-    useFrame(() => {
+    const uniforms = useMemo(
+        () => ({
+            u_color: {
+                // value: new THREE.Vector3(255,255,255),
+                value: new THREE.Color(getHSL(position.x, position.y)),
+            },
+            u_intensity: {
+                value: 0.8,
+            },
+            u_time: {
+                value: 0.0,
+            },
+        }), []
+    );
+
+    useFrame(({clock}) => {
         // Rotate the mesh continuously
-        if (ref.current) ref.current.rotation.x += 0.01;
-        if (ref.current) ref.current.rotation.y -= 0.01;
+        if (ref.current) ref.current.rotation.x += 0.010;
+        if (ref.current) ref.current.rotation.y -= 0.001;
+        if (ref.current) ref.current.rotation.z += 0.001;
+
+        (ref.current.material as THREE.ShaderMaterial).uniforms.u_time.value = 0.5 * clock.getElapsedTime(); // Type ShaderMaterial needed to get the unforms... to register
+      
 
         // if (textRef.current) textRef.current.lookAt(camera.position);
     });
@@ -67,27 +105,12 @@ function Three({position, id, timestamp, clicked} : LabelProps){
         clicked({pId: id, friend_since: timestamp, x: position.x, y: position.y, z: position.z}); 
     }
 
-    const getHSL = (x: number, y: number) => {
-      // HSL color values are specified with: hsl(hue, saturation, lightness)
-      // Hue: The position of a color on the color wheel, represented as an angle in degrees. Red is 0°, green is 120°, and blue is 240°.
-      // Saturation: The intensity of a color, represented as a percentage. 100% is full saturation, and 0% is a shade of gray.
-      // Lightness: The brightness of a color, represented as a percentage. 100% lightness is white, 0% lightness is black, and 50% lightness is normal.
-      if (x === 0 && y === 0 || x === 100 && y === 100|| x === -100 && y === -100 ) {
-        return `hsl(0, 0%, 100%)`; 
-      }
-      const hue = ((Math.atan2(y, x) * 180) / Math.PI) + 180;
-      const saturation = (Math.sqrt(x**2 + y**2));
-      const lightness = "50%";
-      return `hsl(${hue}, ${saturation + 70}%, ${lightness})`;
-
-    }
-
     return (
         <>
             <mesh 
                 position={[position.x,position.y,position.z]} 
                 ref={ref}
-                scale={active ? 1.25 : 1} 
+                scale={active ? 1.15 : 1} 
                 onPointerEnter={(e) => {
                   setActive(true);
                   e.stopPropagation();  
@@ -101,8 +124,16 @@ function Three({position, id, timestamp, clicked} : LabelProps){
                   e.stopPropagation();
                 }}
             >
-                <boxGeometry args={[10, 10, 10]} />
-                <meshStandardMaterial color={getHSL(position.x, position.y)}/>
+              <icosahedronGeometry args={[10, 1]} />
+              {/* <boxGeometry args={[10, 10, 10]} /> */}
+              <shaderMaterial
+                fragmentShader={Fragment}
+                vertexShader={Vertex}
+                uniforms={uniforms}
+                wireframe={false}
+              />
+                {/* <meshStandardMaterial color={getHSL(position.x, position.y)}/> */}
+
             </mesh>
             {/* {active && (
                 <Text ref={textRef} fontSize={5} position={[position.x,position.y + 15,position.z]}>ID: {id}</Text>
@@ -534,7 +565,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                 {/* Looping over friendsList to create a new particle for each friend naively */}
                 {/* A more optimized approach is to use instancing, but I'll save the optimization for the future as I get better with THREE */}
                 <ambientLight intensity={3} />
-                <directionalLight position={[0,0,5]}/>
                 
                 <CustomCameraControls particlePos={cameraPos} cameraRef={cameraControlsRef}/>
     
