@@ -191,7 +191,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
             <div id="canvas-form-container" style={opacityStyle}>
                 <Canvas>
                     <HpParticle animationStart={animation}/>
-                    {/* <TestingShader/> */}
                     <ambientLight color={"white"} intensity={2}/>
                 </Canvas>
             </div> 

@@ -7,10 +7,24 @@ varying vec2 vUv;
 varying float vDisplacement;
 
 void main() {
-  float distort = 0.75 * vDisplacement * u_intensity;
+  float distort = 1.5 * vDisplacement * u_intensity;
 
   vec3 color = vec3(u_color * (2.0 - distort));
   
   gl_FragColor = vec4(color , 1.0);
 }
 `;
+
+export const TubeFragment = `
+uniform vec3 u_color1;
+uniform vec3 u_color2; 
+
+varying vec2 vUv;
+
+void main() {
+  vec3 color = mix(u_color1, u_color2 * 1.5, vUv.x);
+
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+

@@ -91,10 +91,14 @@ function Three({position, id, timestamp, clicked} : LabelProps){
 
     useFrame(({clock}) => {
         // Rotate the mesh continuously
-        if (ref.current) ref.current.rotation.x += 0.010;
-        if (ref.current) ref.current.rotation.y -= 0.001;
-        if (ref.current) ref.current.rotation.z += 0.001;
+        if (active) {
+          if (ref.current) ref.current.rotation.x += 0.010;
+          if (ref.current) ref.current.rotation.y -= 0.001;
+          if (ref.current) ref.current.rotation.z += 0.001;
+        }
 
+        
+        
         (ref.current.material as THREE.ShaderMaterial).uniforms.u_time.value = 0.5 * clock.getElapsedTime(); // Type ShaderMaterial needed to get the unforms... to register
       
 
@@ -553,7 +557,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
   
     if (friendsList && steamProfile && friendsPos) {
         const friendProfileBg = {
-            background: `linear-gradient(#0B1829 0%, #0B1829 34%,${profileBgColor} 100%)`
+            background: `linear-gradient(#0B1829 0%, #0B1829 34%,${profileBgColor} 100%)`,
         }
   
         return (
@@ -578,7 +582,10 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
 
               {displayedSteamId && 
               <>
-              <div id='friend-container' style={friendProfileBg}>
+              <div style={friendProfileBg} id='friend-container'>
+                {/* <div id='friend-container'>
+                </div> */}
+                <div id='star-bg'></div>
                 <button id='friend-close-btn' onClick={turnOff}>X</button>
                 <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded}/>
               </div>

@@ -14,14 +14,11 @@ export function HpParticle({animationStart} : UserSquareProps) {
     const userRef = useRef<THREE.Mesh>(null!);
     const {camera} = useThree();
 
-    // const pTimeRef = useRef({value : 0});
-
     const timeline = gsap.timeline({repeat: 2, repeatDelay: 2.5}); 
 
     const uniforms = useMemo(
         () => ({
             u_color: {
-                // value: new THREE.Vector3(255,255,255),
                 value: new THREE.Color("hsl(0, 0.00%, 100.00%)"),
             },
             u_intensity: {
