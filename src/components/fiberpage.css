@@ -67,12 +67,15 @@
     gap: 10px;
     height: 100%;
     width: 100%;
-    padding-top: 40px;
+    margin-top: 6px;
     z-index: 20;
     /* overflow: hidden; */
 }
 
-
+#friend-name {
+    margin-right: 32px;
+    word-break: break-word;
+}
 #photo-status {
     display: flex;
     flex-direction: column;
@@ -94,7 +97,20 @@
     display: flex;
     gap: 10px;
 }
-  
+
+#add-friends-btn {
+    border: none;
+    color: white;
+    font-weight: bold;
+    transition: all 0.5s ease;
+    background-color: transparent;
+    background: none;
+}
+
+#add-friends-btn:hover {
+    color: #618cc0;
+}
+
 #game-container{
     display: flex;
     flex-direction: column;
@@ -117,6 +133,11 @@
     padding-bottom: 10px;
 }
 
+/* Used because some icons have a gray pixel on each of the four corners */
+.game-icon {
+    border-radius: 3px; 
+}
+
 #search-container {
     position: absolute;
     top:10px;
@@ -130,6 +151,7 @@
     top:40px;
     left:10px;
     gap: 5px;
+    overflow-y : auto;
 }
 
 #select-btns {
@@ -241,7 +263,7 @@ h4 {
     font-size: 0.8rem;
 }
 
-p {
+p, #add-friends-btn {
     font-size: 0.8rem;
 } 
 
@@ -255,6 +277,7 @@ p {
 @media (min-width: 700px) {
     #friend-container {
         width: 25%;
+        min-width: 220px;
     }
     #friend-photo{
         height: 100px;
@@ -265,7 +288,7 @@ p {
     }
 
     #friend-profile {
-        padding-top: 6px;
+        margin-top: 6px;
     }
     
     h2 {
@@ -276,11 +299,15 @@ p {
         font-size: 1rem;
     }
 
-    p {
+    p, #add-friends-btn {
         font-size: 1rem;
     }     
     #copy-focus {
         flex-direction: column;
+    }    
+    #friend-hide-btn {
+        position: absolute;
+        right: 3px;
     }
 }
 

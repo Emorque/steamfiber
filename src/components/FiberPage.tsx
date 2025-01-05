@@ -41,6 +41,7 @@ interface FriendProps {
     friend_id : string;
     friend_since: number;
     setFocus : (currParticlePos : [number,number,number]) => void;
+    hideFriend: (setHide : boolean) => void;
     allPositions: FriendPositions;
     friendsListProp: (newFriends : FriendList | null) => void;
     friendsPositionProp: (newFriendsPos : FriendPositions | null) => void;
@@ -157,7 +158,7 @@ const stateStyle: {[id: number] : string} = {
 }
  
   
-function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsListProp, friendsPositionProp, friendsAddedProp}  : FriendProps ) {
+function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositions, friendsListProp, friendsPositionProp, friendsAddedProp}  : FriendProps ) {
     const [friendProfile, setFriendProfile] = useState< SteamProfile | null>(null);
     const [recentGames, setRecentGames] = useState< RecentlyPlayed | null>(null);
     const [error, setError] = useState< string | null >(null)
@@ -173,7 +174,7 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
 
     const errorStyle = {
       opacity: error? 1 : 0,
-      transform: error? "translate(10px,10px)" : "translate(10px,0px)",
+      transform: error? "translate(10px,15px)" : "translate(10px,0px)",
       transition: "all 0.25s linear",
     }
 
@@ -200,6 +201,10 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
         const setNewFocus = () => {
           const currParticlePos = allPositions[friend_id]
           setFocus([currParticlePos.x,currParticlePos.y,currParticlePos.z]);
+        }
+
+        const hideProfile = () => {
+          hideFriend(false);
         }
   
         const copyToClipboard = () => {
@@ -252,7 +257,7 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
   
         return (
           <div id='friend-profile'>
-            <h2>{friendProfile.personaname}</h2>
+            <h2 id='friend-name'>{friendProfile.personaname}</h2>  
             <div id='photo-status'>
               <img id='friend-photo' src={friendProfile.avatarfull} fetchPriority='low' alt={`${friendProfile.personaname}'s Steam Picture`}></img>
               <div id='profile-buttons'>
@@ -260,6 +265,7 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
                 <div id='copy-focus'>
                   <img src="/images/focus.svg" height={30} width={30} onClick={() => setNewFocus()} className='cursor-pointer' fetchPriority='low' alt={`Click to focus on ${friendProfile.personaname}`}></img>
                   <img src="/images/copy.svg" height={30} width={30} onClick={() => copyToClipboard()} className='cursor-pointer' fetchPriority='low' alt={`Click to copy ${friendProfile.personaname}'s Steam id`}></img>
+                  <img fetchPriority='low' src='/images/hide.svg' width={30} height={30} onClick={() => hideProfile()} className='cursor-pointer' alt='Click to hide Friend Profile' id='friend-hide-btn'></img>
                 </div>
               </div>
             </div>
@@ -267,7 +273,9 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
             {friend_since_date && <p>Friends Since: {friend_since_date}</p>}
             <p><a href={friendProfile.profileurl} target='blank'>Visit Profile</a></p>
             <div style={{position: "relative"}}>
-              <p onClick={() => addFriends()} style={{zIndex: 20, position: "relative"}}><a>Add Their Friends</a></p>
+              {/* <p onClick={() => addFriends()} style={{zIndex: 20, position: "relative"}}><a>Add Their Friends</a></p> */}
+              <button id='add-friends-btn' onClick={() => addFriends()} style={{zIndex: 20, position: "relative"}}>Add Their Friends</button>
+
 
               {<p id='error-text' style={errorStyle}>{error}</p>}
             </div>
@@ -275,22 +283,23 @@ function FriendProfie({friend_id, friend_since, setFocus, allPositions, friendsL
             <>
               <h2>Recently Played:</h2>
               <div id='game-container'>
-                  {recentGames.games && recentGames.games.map((game) => {
-                    return (
-                      <div className='game' key={game.appid}>
-                        <a href={`https://store.steampowered.com/app/${game.appid}/`} target='blank'>
-                          <div className='game-metadata'>
-                            <img fetchPriority='low' src={`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`} alt={`Icon of ${game.name}`} />
-                            <p>{game.name}</p>
-                          </div>
-                        </a>
-                        <p>{(game.playtime_2weeks / 60).toFixed(1)} hrs played recently</p>
-                        <p>{(game.playtime_forever / 60).toFixed(1)} hrs on Record</p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </>
+                {recentGames.games && recentGames.games.map((game) => {
+                  return (
+                    <div className='game' key={game.appid}>
+                      <a href={`https://store.steampowered.com/app/${game.appid}/`} target='blank'>
+                        <div className='game-metadata'>
+                          <img fetchPriority='low' src={`http://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`} alt={`Icon of ${game.name}`} className='game-icon'/>
+                          <p>{game.name}</p>
+                        </div>
+                      </a>
+                      <p>{(game.playtime_2weeks / 60).toFixed(1)} hrs played recently</p>
+                      <p>{(game.playtime_forever / 60).toFixed(1)} hrs on Record</p>
+                    </div>
+                  )
+                })}
+              </div>
+              <br/>
+            </>
             }
           </div>
         )
@@ -346,7 +355,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const [steamProfile] = useState<SteamProfile>(steamProfileProp);
     const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
     const [friendsPos, setFriendsPos] = useState<FriendPositions | null>(friendsPositionProp);
-   const friendsAdded = friendsAddedProp;
+    const friendsAdded = friendsAddedProp;
 
     const [displayedSteamId, setDisplayedSteamId] = useState<ParticleInfo | null>(null);
 
@@ -359,6 +368,8 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const [showUI, setUI] = useState<boolean>(true);
     const [search, setSearch] = useState<string>('');
     const [freeRoam, setFreeRoam] = useState<string>("free roam");
+
+    const [visibleProfile, setVisibleProfile] = useState<boolean>(true);
 
     const cameraControlsRef = useRef<CameraControls>(null);
     const [cameraPos, setCameraPos] = useState<[number, number, number] | [0,0,0]>([0,0,0]);
@@ -394,6 +405,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       setBgColor(getProfileHSL(pInfo.x, pInfo.y))
   
       setUI(true);
+      setVisibleProfile(true);
     }
   
     const turnOff = () => {
@@ -441,6 +453,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
           z: position.z
         }
         setDisplayedSteamId(info);
+        setVisibleProfile(true);
         setBgColor(getProfileHSL(info.x,info.y));
         setCameraPos([position.x, position.y, position.z]);
       }
@@ -468,6 +481,10 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
   
     const setNewFocus = (newFocus : [number,number,number]) => {
       setCameraPos(newFocus);
+    }
+
+    const hideFriendProfile = () => {
+      setVisibleProfile(false);
     }
   
     // const goHome = () => {
@@ -524,11 +541,12 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     }
   
     const cameraStyle = {
-      maxHeight: cameraSettings? 300 : 0,
-      overflow: "hidden", // very important
+      maxHeight: cameraSettings? Math.min(277, window.innerHeight - 136) : 0,
+      overflow: cameraSettings && 413 > window.innerHeight ? "scroll" : "hidden", // Add scroll if content exceeds viewport height      transition: 'max-height 0.5s ease',
       transition: 'max-height 0.5s ease',
       backgroundColor: "#0d0c1113",
-      width: "fit-content"
+      width: "fit-content",
+      paddingRight: "6px", //for the scrollbar to not overlap
     } 
   
     const horizontalStyle = {
@@ -558,6 +576,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     if (friendsList && steamProfile && friendsPos) {
         const friendProfileBg = {
             background: `linear-gradient(#0B1829 0%, #0B1829 34%,${profileBgColor} 100%)`,
+            display: visibleProfile? "block": "none",
         }
   
         return (
@@ -587,7 +606,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                 </div> */}
                 <div id='star-bg'></div>
                 <button id='friend-close-btn' onClick={turnOff}>X</button>
-                <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded}/>
+                <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} hideFriend={hideFriendProfile} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded}/>
               </div>
               </>
               }

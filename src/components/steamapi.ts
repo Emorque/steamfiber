@@ -1,7 +1,7 @@
 import { FriendList, SteamProfile, RecentlyPlayed } from '@/components/types'; // Getting types
 
 function validId(steam_id: string) {
-    if (steam_id.length !== 17 && steam_id.length !== 16) {
+    if ((steam_id.length !== 17 && steam_id.length !== 16)|| steam_id[0] === '-') {
         return false
     }
     for (let i = 0; i < steam_id.length; i++){
