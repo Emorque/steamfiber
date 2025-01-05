@@ -6,24 +6,45 @@
 
 #friend-container {
     position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     top:0px;
     right:-1px;
-    height: fit-content;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    /* height: fit-content; */
     margin: 0;
     height: 100%;
     padding: 10px;
     width: 30%;
     overflow-y : auto;
-    background-color: #0d0c1113;
-    scrollbar-color: black white;
+    scrollbar-color: black #0d0c1113;
     scrollbar-width: thin;
     max-width: 400px;
     min-width: 150px;
+    z-index: 10;
 }
-  
+
+#star-bg {
+    position: absolute;
+    top:0px;
+    right:0px;
+    background-image: url("/images/star.svg");
+    background-size: 10%;
+    animation: pan 100s linear infinite;
+    will-change: background-position;
+    width: 100%;
+    height: 100%;
+    opacity: 0.4;
+    z-index: 10;
+}
+
+@keyframes pan {
+    0% {
+        background-position: 0%, 0%
+    }
+    100% {
+        background-position: 100%, 0%;
+    }
+}
 
 #friend-close-btn {
     background-color: #1d242c;
@@ -32,7 +53,7 @@
     position: absolute;
     right: 16px;
     top: 16px;
-    z-index: 10;
+    z-index: 40;
     font-weight: bold;
     font-size: large;
     cursor: pointer;
@@ -40,12 +61,14 @@
 }
 
 #friend-profile {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 10px;
     height: 100%;
     width: 100%;
     padding-top: 40px;
+    z-index: 20;
     /* overflow: hidden; */
 }
 
@@ -184,7 +207,7 @@ input[type="number"] {
     color: black;
     border: solid 1px #8f8f8f;
     padding: 1px 6px;
-    width: 125px;
+    width: 130px;
 }
 
 #error-text {
@@ -263,6 +286,6 @@ p {
 
 @media (min-width: 400px) {
     input[type="number"] {
-        width: 150px;
+        width: 155px;
     } 
 }
