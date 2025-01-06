@@ -138,6 +138,42 @@
     border-radius: 3px; 
 }
 
+.loading-dot{
+    display: inline-block;
+    padding-left: 1px;
+    /* height: fit-content; */
+    /* width: fit-content; */
+    /* transform: translate(50px, 100px); */
+    /* padding; */
+    animation: loading 2s ease infinite;
+    /* transform: translate(10px,10px); */
+}
+
+.loading-dot:nth-child(1) {
+    /* color: white; */
+    animation-delay: 0s;
+}
+.loading-dot:nth-child(2) {
+    /* color: yellow; */
+    animation-delay: 500ms;
+}
+.loading-dot:nth-child(3) {
+    /* color: green; */
+    animation-delay: 1000ms;
+}
+
+@keyframes loading {
+    0% {
+        transform: translate(0,0);
+    }
+    50% {
+        transform: translate(0,-10px);
+    }
+    100% {
+        transform: translate(0,0);;
+    }
+}
+
 #search-container {
     position: absolute;
     top:10px;
@@ -229,7 +265,7 @@ input[type="number"] {
     color: black;
     border: solid 1px #8f8f8f;
     padding: 1px 6px;
-    width: 130px;
+    width: 125px;
 }
 
 #error-text {
@@ -310,6 +346,14 @@ p, #add-friends-btn {
         right: 3px;
     }
 }
+
+
+@media (min-width: 350px) {
+    input[type="number"] {
+        width: 140px;
+    } 
+}
+
 
 @media (min-width: 400px) {
     input[type="number"] {

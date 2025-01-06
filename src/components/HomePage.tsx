@@ -155,6 +155,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                             type="number"
                             style={errorStyle}
                             value={steamId}
+                            name="input-steamID"
                             onChange={(e) => setSteamId(e.target.value)}
                         />
                         <input 
@@ -174,17 +175,19 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                         <p>1. Visit <a href="https://steamcommunity.com/" target="blank">Steam</a> and select your username</p>
                         <p>2. Select &quot;Account details&quot;</p>
                         <p>3. Your Steam ID is below your username</p>
-                        
                         <br/>
-                        <img src="/images/account.webp" alt="Acccount details page for a Steam User" width={294} height={130}></img>
+                        <p>SteamFiber can only display your friends if your Steam Community profile visibility is set to "Public"</p>
+                        <br/>
+                        <img id="help-image" src="/images/account.webp" alt="Acccount details page for a Steam User" width={294} height={130}></img>
                     </div>
                 )}    
 
                 {infoComponent && (
                     <div id="footer">
-                        <h4>SteamCircle is a hobby project and is not affiliated with Value or Steam</h4>
-                        <h4>Made with <a id="steam" href="https://developer.valvesoftware.com/wiki/Steam_Web_API" target="blank">Steam Web API</a></h4>
+                        <h4>SteamFiber is a hobby project and is not affiliated with Value or Steam</h4>
                         <h4>Steam is a trademark of Valve Corporation</h4>
+                        <h4>SteamFiber only uses end user data from Steam to display information to you</h4>
+                        <h4>Made with <a id="steam" href="https://developer.valvesoftware.com/wiki/Steam_Web_API" target="blank">Steam Web API</a></h4>
                     </div> 
                 )}
             </div>

@@ -3,7 +3,7 @@
 import { FriendList, SteamProfile, FriendPositions, RecentlyPlayed, FriendsAdded } from '@/components/types'; // Getting types
 import { Canvas, useFrame } from '@react-three/fiber'
 import { CameraControls, } from '@react-three/drei';
-import { useState, useRef, useEffect, useMemo} from "react";
+import { useState, useRef, useEffect, useMemo, use} from "react";
 
 import { getSteamProfile, getFriendsList, getRecentGames } from "./steamapi";
 import { Tube } from './Tube';
@@ -63,10 +63,9 @@ const getHSL = (x: number, y: number) => {
     return `hsl(0, 0%, 100%)`; 
   }
   const hue = ((Math.atan2(y, x) * 180) / Math.PI) + 180;
-  const saturation = (Math.sqrt(x**2 + y**2));
+  const saturation = Math.min((Math.sqrt(x**2 + y**2)), 80);
   const lightness = "50%";
-  return `hsl(${hue}, ${saturation + 70}%, ${lightness})`;
-
+  return `hsl(${hue}, ${saturation}%, ${lightness})`;
 }
 
 function Three({position, id, timestamp, clicked} : LabelProps){
@@ -97,13 +96,8 @@ function Three({position, id, timestamp, clicked} : LabelProps){
           if (ref.current) ref.current.rotation.y -= 0.001;
           if (ref.current) ref.current.rotation.z += 0.001;
         }
-
-        
         
         (ref.current.material as THREE.ShaderMaterial).uniforms.u_time.value = 0.5 * clock.getElapsedTime(); // Type ShaderMaterial needed to get the unforms... to register
-      
-
-        // if (textRef.current) textRef.current.lookAt(camera.position);
     });
 
     const handleClick = () => {
@@ -270,7 +264,7 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
               </div>
             </div>
 
-            {friend_since_date && <p>Friends Since: {friend_since_date}</p>}
+            {friend_since_date && friendProfile.profileurl && <p>Friends Since: {friend_since_date}</p>}
             <p><a href={friendProfile.profileurl} target='blank'>Visit Profile</a></p>
             <div style={{position: "relative"}}>
               {/* <p onClick={() => addFriends()} style={{zIndex: 20, position: "relative"}}><a>Add Their Friends</a></p> */}
@@ -306,7 +300,11 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
       } 
       else {
         return (
-          <h1>Loading...</h1>
+          <h2>Loading
+            <span className='loading-dot'>.</span>
+            <span className='loading-dot'>.</span>
+            <span className='loading-dot'>.</span>
+          </h2>
         )
       }    
 }
@@ -368,6 +366,8 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const [showUI, setUI] = useState<boolean>(true);
     const [search, setSearch] = useState<string>('');
     const [freeRoam, setFreeRoam] = useState<string>("free roam");
+
+    const [disabledRandom, setDisabledRandom] = useState<boolean>(false);
 
     const [visibleProfile, setVisibleProfile] = useState<boolean>(true);
 
@@ -456,6 +456,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         setVisibleProfile(true);
         setBgColor(getProfileHSL(info.x,info.y));
         setCameraPos([position.x, position.y, position.z]);
+        setDisabledRandom(true);
+
+        setTimeout(() => {
+          setDisabledRandom(false);
+        }, 1000)
       }
   
     }
@@ -558,6 +563,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       transform: (verticalCamera === "up")? "scaleY(1)" : "scaleY(-1)",
       transition: "all 0.5 linear"
     }
+
+    const randomBtnStyle = {
+      opacity: disabledRandom? 0.2: 1,
+      transition: "opacity 0.25s linear"
+    }
   
     const toggleVerticalCamera = () => {
       if (verticalCamera === "up") {
@@ -616,6 +626,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                   <input
                       type="number"
                       value={search}
+                      name="input-search-steamID"
                       onChange={(e) => setSearch(e.target.value)}
                   />
                   <input 
@@ -625,7 +636,9 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                 </form>
                 <div id='camera-container'>
                   <div id='select-btns'> 
-                    <img fetchPriority='low' onClick={randomFriend} src='/images/shuffle.svg' width={40} height={40} className='cursor-pointer' alt='Click to select a random friend'/>  
+                    <button onClick={randomFriend} style={{border: 0, backgroundColor: "transparent", padding: 0}} disabled={disabledRandom}>
+                      <img fetchPriority='low' src='/images/shuffle.svg' width={40} height={40} className='cursor-pointer' style={randomBtnStyle} alt='Click to select a random friend'/>  
+                    </button>
                     <img fetchPriority='low' onClick={backToUser} src='/images/focus.svg' width={40} height={40} className='cursor-pointer' alt='Click to focus back to yourself'/>  
                   </div>
 

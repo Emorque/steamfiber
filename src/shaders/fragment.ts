@@ -7,7 +7,7 @@ varying vec2 vUv;
 varying float vDisplacement;
 
 void main() {
-  float distort = 1.5 * vDisplacement * u_intensity;
+  float distort = vDisplacement * u_intensity;
 
   vec3 color = vec3(u_color * (2.0 - distort));
   

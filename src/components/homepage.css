@@ -74,7 +74,7 @@
     padding: 10px;
     width: 50%;
     gap: 10px;
-    max-width: 500px;
+    max-width: 400px;
     min-width: 250px;
 }
 
@@ -85,6 +85,9 @@
     display: flex;
     flex-direction: column;
     padding: 10px;
+    width: 50%;
+    min-width: 250px;
+    max-width: 400px;
     img {
         height: auto;
         width: auto
@@ -98,6 +101,10 @@
         padding: 5px;
         cursor: pointer;
     }
+}
+
+#help-image {
+    display: none;
 }
 
 a {
@@ -149,4 +156,10 @@ input[type="submit"] {
     color: rgb(243, 81, 81);
     width: fit-content;
     height: fit-content;
+}
+
+@media (min-height: 440px) {
+    #help-image {
+        display: block;
+    }
 }
