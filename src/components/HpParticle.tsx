@@ -27,7 +27,7 @@ export function HpParticle({animationStart} : UserSquareProps) {
             u_time: {
                 value: 0.0,
             },
-        }), []
+        }), [animationStart]
     );
 
     useFrame(({clock}) => {

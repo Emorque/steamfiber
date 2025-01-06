@@ -176,7 +176,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                         <p>2. Select &quot;Account details&quot;</p>
                         <p>3. Your Steam ID is below your username</p>
                         <br/>
-                        <p>SteamFiber can only display your friends if your Steam Community profile visibility is set to "Public"</p>
+                        <p>SteamFiber can only display your friends if your Steam Community profile visibility is set to &quot;Public&quot;</p>
                         <br/>
                         <img id="help-image" src="/images/account.webp" alt="Acccount details page for a Steam User" width={294} height={130}></img>
                     </div>

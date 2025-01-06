@@ -28,7 +28,7 @@ const getHSL = (x: number, y: number) => {
       return `hsl(0, 0%, 100%)`; 
     }
     const hue = ((Math.atan2(y, x) * 180) / Math.PI) + 180;
-    const saturation = Math.min((Math.sqrt(x**2 + y**2)), 80);
+    const saturation = Math.min(Math.max(Math.sqrt(x**2 + y**2), 10), 80);
     const lightness = "50%";
     return `hsl(${hue}, ${saturation + 70}%, ${lightness})`;
   
@@ -49,7 +49,7 @@ function TubeInstance({position} : TubeInstanceProps){
             u_color2: {
                 value: new THREE.Color(getHSL(position[3], position[4]))
             }
-        }), []
+        }), [position]
     );
     return (
         <>
