@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import './globals.css'
-import { CSPostHogProvider } from './providers'
+// import { PostHogProvider } from './providers'
+
+import { PostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "SteamFiber",
@@ -16,11 +17,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <CSPostHogProvider>
-        <body>
+      <body>
+        <PostHogProvider>
           {children}
-        </body>
-      </CSPostHogProvider>
+        </PostHogProvider>
+      </body>
     </html>
-  );
+  )
 }
