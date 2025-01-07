@@ -155,12 +155,10 @@ const stateStyle: {[id: number] : string} = {
 function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositions, friendsListProp, friendsPositionProp, friendsAddedProp}  : FriendProps ) {
     const [friendProfile, setFriendProfile] = useState< SteamProfile | null>(null);
     const [recentGames, setRecentGames] = useState< RecentlyPlayed | null>(null);
-    const [error, setError] = useState< string | null >(null)
+    const [error, setError] = useState< string | null >(null);
 
-    let friend_since_date = new Date(friend_since * 1000).toLocaleDateString('en-Us', { month: 'short', year: 'numeric', day: 'numeric' });
-    if (friend_since_date === "Dec 31, 1969") { //This is the starting point of the UNIX timestamp. Only applicable to the user
-      friend_since_date = ""
-    }
+    const [loading, setLoading] = useState<boolean>(true);
+
   
     const getSign = () => {
       return Math.random() < 0.5 ? 1 : -1
@@ -178,20 +176,29 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
         setError(null)
       }, 1500);
     }
-  
+
+    let friend_since_date = new Date(friend_since * 1000).toLocaleDateString('en-Us', { month: 'short', year: 'numeric', day: 'numeric' });
+    if (friend_since_date === "Dec 31, 1969") { //This is the starting point of the UNIX timestamp. Only applicable to the user
+      friend_since_date = ""
+    }
+
     useEffect(() => { ( 
       async () => 
         {
+          setLoading(true);
           const steamProfile = await getSteamProfile(friend_id);
           const recentlyPlayed = await getRecentGames(friend_id);
           setFriendProfile(steamProfile);
           setRecentGames(recentlyPlayed)
+          if (friendProfile && recentGames){
+            setLoading(false)
+          }         
         })
         () 
       }, [friend_id])//The dependency array [friend_id] executes this await function call whenever the friend_id from FriendProps changes. i.e., when a different particle is cliked. If the friend_id is the same, no new await call is made
   
     // https://react.dev/reference/rsc/server-components
-      if (friendProfile && recentGames) {
+      if (friendProfile && recentGames && !loading) {
         const setNewFocus = () => {
           const currParticlePos = allPositions[friend_id]
           setFocus([currParticlePos.x,currParticlePos.y,currParticlePos.z]);
@@ -401,8 +408,9 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     }
   
     const handleClick = (pInfo: ParticleInfo) => {
-      setDisplayedSteamId(pInfo);  // Update the state to trigger a rerender
-      setBgColor(getProfileHSL(pInfo.x, pInfo.y))
+      setDisplayedSteamId(pInfo);
+      setBgColor(getProfileHSL(pInfo.x, pInfo.y));
+      
   
       setUI(true);
       setVisibleProfile(true);
