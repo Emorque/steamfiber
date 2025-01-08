@@ -65,6 +65,35 @@
     /* min-width: 20px; */
 }
 
+#database-wrapper {
+    position: absolute;
+
+    background-color: #000000e0;
+    /* padding: 10px; */
+    width: 50%;
+    min-width: 275px;
+    max-width: 200px;
+    gap: 15px;
+
+    height: 50%;
+    max-height: 300px;
+    border-radius: 5px;
+}
+
+#database-component {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+
+    z-index: 10;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    scrollbar-color: #eaeaea #000000;
+    scrollbar-width: thin;
+}
+
 #footer {
     position: absolute;
     z-index: 10;
@@ -131,6 +160,56 @@ input[type="submit"] {
     padding: 1px 6px;
 }
 
+.database-btn {
+    border: 0;
+    top:5px;
+    right:-30px;
+    position: absolute;
+    background-color: transparent;
+    padding: 0px 6px;
+    /* margin: 0; */
+    /* display: flex; */
+    /* align-items: center; */
+    /* justify-content: center; */
+}
+
+.steamName-btn {
+    border: 0;
+    background-color: transparent;
+    padding: 0;
+    width: fit-content;
+    text-align: start;
+    /* overflow-y: hidden; */
+    /* white-space: nowrap; */
+    /* text-overflow: ellipsis; */
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #eaeaea;
+    height: fit-content;
+}
+
+.steamName-btn:first-child {
+    margin-right: 10px;
+}
+
+#close-database-btn {
+    position: absolute;
+    right: 0;
+    transform: translate(0, -30px);
+    width: fit-content;
+    height: fit-content;
+    padding: 5px;
+    cursor: pointer;
+
+    background-color: black;
+    color: #eaeaea;
+    font-weight: bold;
+    border: 0;
+    font-size: large;
+}
+
 /* input[type="number"] {
     color: black;
     border: solid 1px #8f8f8f;
@@ -148,6 +227,12 @@ input[type="submit"] {
     font-size: large;
     cursor: pointer;
     padding: 1px 6px;
+}
+
+.database-btns {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .error-text {

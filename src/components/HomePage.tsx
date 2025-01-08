@@ -39,6 +39,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     // States for styling
     const [helpComponent, setHelpComponent] = useState<boolean>();
     const [infoComponent, setInfoComponent] = useState<boolean>(false);
+    const [databaseComponent, setDatabaseComponent] = useState<boolean>(false);
     const [disabledButton, setDisabledButton] = useState<boolean>(false);
 
     const [idError, setIdError] = useState< string | null >(null)
@@ -55,15 +56,41 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
 
     const showHelpComponent = () => { setHelpComponent(true) }
     const hideHelpComponent = () => { setHelpComponent(false) }
+    const hideDatabaseComponent = () => {setDatabaseComponent(false)}
+
+    const showDatabase = () => { setDatabaseComponent(true)}
 
     const handleInfo = () => {
         setInfoComponent(!infoComponent);
         setHelpComponent(false);
+        setDatabaseComponent(false);
+    }
+
+    const localIds: string[][] = []
+    // Getting the used ids from local storage
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i); // Get the key at index i
+        if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {
+          const value = localStorage.getItem(key); // Get the value associated with that key
+          if (value) {
+            localIds.push([key, value]);
+          }
+        }
+    }
+
+    const setSteamName = (steamName: string) => {
+        setSteamId(steamName);
+        setHelpComponent(false);
+        setDatabaseComponent(false);
+    }
+
+    const clearSteamName = (steamName: string) => {
+        localStorage.removeItem(steamName);
     }
 
     // Extra styles dependent on states
     const opacityStyle = {
-        opacity: (helpComponent || infoComponent)? 0.5: 1,
+        opacity: (helpComponent || infoComponent || databaseComponent)? 0.5: 1,
         transition: 'all 0.3s ease'
     }
 
@@ -125,6 +152,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         if (fList) {
         startAnimation(true);
         setDisabledButton(true);
+
         setTimeout(async () => {
                 friendsListProp(fList);
                 const friendsPos : FriendPositions = {}
@@ -148,7 +176,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                     }
                     friendsPos[friend.steamid] = pos
                 });
-                friendsPos[steamId] = {
+                friendsPos[steamProfile.steamid] = {
                     "x": 0,
                     "y": 0,
                     "z": 0,
@@ -181,24 +209,49 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                 
                 <div id="form-container" style={opacityStyle}>
                     <p>Enter Steam ID:</p>
-                    <form onSubmit={handleSubmit}> 
-                        <input
-                            type="text"
-                            style={errorStyle}
-                            value={steamId}
-                            name="input-steamID"
-                            onChange={(e) => setSteamId(e.target.value)}
-                        />
-                        <input 
-                            type="submit"
-                            style={{cursor:'pointer'}}
-                        />
-                    </form>
+                    <div style={{position: "relative"}}>
+                        <form onSubmit={handleSubmit}> 
+                            <input
+                                type="text"
+                                style={errorStyle}
+                                value={steamId}
+                                name="input-steamID"
+                                onChange={(e) => setSteamId(e.target.value)}
+                            />
+                            <input 
+                                type="submit"
+                                style={{cursor:'pointer'}}
+                            />
+                        </form>
+                        <button className="database-btn" onClick={showDatabase}>
+                            <img src="/images/database.svg" width={15} height={15}></img>
+                        </button>
+                    </div>
                     <div>
                         <button onClick={showHelpComponent} id="form-button" disabled={disabledButton}>Don&apos;t Know?</button>
                         {idError && (<p className="error-text">{idError}</p>)}
                     </div>
                 </div>
+
+                {databaseComponent && (
+                    <div id="database-wrapper">
+                        <button id="close-database-btn" onClick={hideDatabaseComponent} disabled={disabledButton}>X</button>
+                        <div id="database-component">
+                            {localIds.map(([key, value]) => {
+                                return (
+                                    <div className="database-btns" key={value}>
+                                        <button className="steamName-btn" onClick={() => setSteamName(key)}>
+                                            {key}
+                                        </button>
+                                        <button className="steamName-btn" onClick={() => clearSteamName(key)}>
+                                            X
+                                        </button>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}    
 
                 {helpComponent && (
                     <div id="help-component">
