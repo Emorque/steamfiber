@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { FriendList, Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions } from '@/components/types'; // Getting types
+import { FriendList, Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions, SteamNames } from '@/components/types'; // Getting types
 import { getSteamProfile, getFriendsList } from "./steamapi";
 
 
@@ -14,6 +14,7 @@ interface HomePageProps {
     friendsListProp : (friends : FriendList | null) => void;
     friendsPositionProp : (friendsPos : FriendPositions | null) => void;
     friendsAddedProp : (originalUser : FriendsAdded | null) => void;
+    steamNamesProps : (newSteamNames : SteamNames | null) => void;
 }
 
 function getSign() : number {
@@ -32,7 +33,7 @@ function validId(steam_id: string) {
     return true
 }
 
-export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp} : HomePageProps) {
+export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : HomePageProps) {
     const [steamId, setSteamId] = useState<string>('');
 
     // States for styling
@@ -79,35 +80,59 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const handleSubmit = async (event : React.FormEvent) => {
         event.preventDefault();
         // console.log(checkedIds);
-        if (!validId(steamId)) {
-            SteamIdError("Invalid Steam ID");
-            return
+        let steamProfile;
+        if (localStorage.getItem(steamId)){
+            const id = localStorage.getItem(steamId);
+            // console.log(id);
+            if (id) {
+                steamProfile = await getSteamProfile(id);
+            }
+            else{
+                SteamIdError("Invalid Steam ID");
+                return
+            }
         }
-        if (!(steamId)) {
-            SteamIdError("Please Enter your Steam ID");
-            return
+        // console.log(steamId);
+        else {
+            if (!validId(steamId)) {
+                SteamIdError("Invalid Steam ID");
+                return
+            }
+            if (!(steamId)) {
+                SteamIdError("Please Enter your Steam ID");
+                return
+            }
+            if (checkedIds.has(steamId)) {
+                SteamIdError("Enter a different Steam ID");
+                return
+            }
+            steamProfile = await getSteamProfile(steamId);
         }
-        if (checkedIds.has(steamId)) {
-            SteamIdError("Enter a different Steam ID");
-            return
-        }
-        const steamProfile = await getSteamProfile(steamId);
         if (steamProfile) {
             steamProfileProp(steamProfile);
-            startAnimation(true);
-            setDisabledButton(true);
         } else {
             checkedIds.add(steamId);
             SteamIdError("Invalid Steam ID");
             return;
         }
 
+        const fList = await getFriendsList(steamProfile.steamid);
+        if (!fList) {
+            checkedIds.add(steamId);
+            SteamIdError("Profile is Private");
+            return;
+        }
+        if (fList) {
+        startAnimation(true);
+        setDisabledButton(true);
         setTimeout(async () => {
-            const fList = await getFriendsList(steamId);
-            if (fList) {
                 friendsListProp(fList);
                 const friendsPos : FriendPositions = {}
-    
+
+                if (localStorage.getItem(steamProfile.steamid) === null) {
+                    localStorage.setItem(steamProfile.personaname, steamProfile.steamid);
+                }
+                
                 const length = fList.friends.length
                 const max = Math.sqrt(2000 * length) / 2;
     
@@ -118,7 +143,8 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                         "y": getSign() * Math.random() * (max - min) + min,
                         "z": Math.random() * 50 - 25,
                         "timestamp": friend.friend_since,
-                        "calledID": steamId
+                        "calledFriend": steamProfile.personaname,
+                        "calledID": steamProfile.steamid
                     }
                     friendsPos[friend.steamid] = pos
                 });
@@ -127,14 +153,19 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                     "y": 0,
                     "z": 0,
                     "timestamp": 0,
-                    "calledID": steamId
+                    "calledFriend": steamProfile.personaname,
+                    "calledID": ""
                 }
                 friendsPositionProp(friendsPos);
                 }
-                const originalUser = {[steamId] : true}
-                friendsAddedProp(originalUser);          
-            }
+                const originalUser = {[steamProfile.steamid] : true}
+                friendsAddedProp(originalUser);
+                const newSteamNames : SteamNames = {
+                    [steamProfile.steamid] : steamProfile.personaname
+                }
+                steamNamesProps(newSteamNames);          
         }, 5000);
+    }
     };
     
     return (
@@ -152,7 +183,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                     <p>Enter Steam ID:</p>
                     <form onSubmit={handleSubmit}> 
                         <input
-                            type="number"
+                            type="text"
                             style={errorStyle}
                             value={steamId}
                             name="input-steamID"

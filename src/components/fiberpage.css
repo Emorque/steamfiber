@@ -48,7 +48,7 @@
 
 #friend-close-btn {
     background-color: #1d242c;
-    color: white;
+    color: #eaeaea;
     border: solid 1px #8f8f8f;
     position: absolute;
     right: 16px;
@@ -100,7 +100,7 @@
 
 #add-friends-btn {
     border: none;
-    color: white;
+    color: #eaeaea;
     font-weight: bold;
     transition: all 0.5s ease;
     background-color: transparent;
@@ -138,6 +138,59 @@
     border-radius: 3px; 
 }
 
+#thread-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    height: fit-content;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-left: 10px;
+
+    button {
+        color: #eaeaea
+    }
+}
+
+.thread-btn {
+    border: 0;
+    background-color: transparent;
+    padding: 0;
+    transition: opacity 300ms ease;
+    width: 100%;
+    text-align: start;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis
+
+}
+
+#thread-container:hover > .thread-btn {
+    opacity: 0.3;
+}
+
+#thread-container:hover > .thread-btn:hover {
+    opacity: 1;
+}
+
+
+
+#fiber-line {
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    /* overflow: hidden; */
+    max-height: 0;
+    background-color: #eaeaea;
+    opacity: 1;
+    top:0;
+    left:0;
+    content: "";
+    transition: max-height 0.5s ease,
+}
+
 .loading-dot{
     display: inline-block;
     padding-left: 1px;
@@ -170,7 +223,7 @@
         transform: translate(0,-5px);
     }
     100% {
-        transform: translate(0,0);;
+        transform: translate(0,0);
     }
 }
 
@@ -196,7 +249,7 @@
     width: fit-content;
     button {
         background-color: #1d242c;
-        color: white;
+        color: #eaeaea;
         border: solid 1px #8f8f8f;
         padding: 1px 6px;
     }
@@ -217,7 +270,7 @@
     }
     button {
         background-color: #1d242c;
-        color: white;
+        color: #eaeaea;
         border: solid 1px #8f8f8f;
         padding: 1px 6px;
     }
@@ -235,6 +288,10 @@
     transform: translate(10px,10px);
     width: fit-content;
     height: fit-content;
+}
+
+.thread-arrow {
+    transform: scaleY(-1);
 }
 
 #zoom-btns {
@@ -261,7 +318,7 @@ button,.cursor-pointer{
     cursor: pointer;
 }
 
-input[type="number"] {
+input[type="text"] {
     color: black;
     border: solid 1px #8f8f8f;
     padding: 1px 6px;
@@ -299,7 +356,7 @@ h4 {
     font-size: 0.8rem;
 }
 
-p, #add-friends-btn {
+p, #add-friends-btn, .thread-btn {
     font-size: 0.8rem;
 } 
 
@@ -335,7 +392,7 @@ p, #add-friends-btn {
         font-size: 1rem;
     }
 
-    p, #add-friends-btn {
+    p, #add-friends-btn, .thread-btn {
         font-size: 1rem;
     }     
     #copy-focus {
@@ -349,14 +406,14 @@ p, #add-friends-btn {
 
 
 @media (min-width: 350px) {
-    input[type="number"] {
+    input[type="text"] {
         width: 140px;
     } 
 }
 
 
 @media (min-width: 400px) {
-    input[type="number"] {
+    input[type="text"] {
         width: 155px;
     } 
 }

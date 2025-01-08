@@ -28,8 +28,7 @@ export async function GET(request: Request, { params } : { params : {steamId: st
         }});
     
         if (!res.ok) { //https://nextjs.org/docs/app/building-your-application/routing/error-handling
-            const errorMessage = await res.text();
-            return NextResponse.json({ message: 'There was an error fetching friends list', details: errorMessage }, { status: 500 })        
+            return NextResponse.json({error: 'Private Profile'}, {status: 500})
         }
         const friendsList = await res.json();
         return NextResponse.json(
@@ -46,7 +45,7 @@ export async function GET(request: Request, { params } : { params : {steamId: st
         );    
     }
     catch (error) {
-        console.error(error);
+        // console.error(error);
         return NextResponse.json(error)
     }
 }

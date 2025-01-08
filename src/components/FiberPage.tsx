@@ -1,8 +1,8 @@
 // 76561198066405189  - Person with 2000 Friends
 
-import { FriendList, SteamProfile, FriendPositions, RecentlyPlayed, FriendsAdded } from '@/components/types'; // Getting types
-import { Canvas, useFrame } from '@react-three/fiber'
-import { CameraControls, } from '@react-three/drei';
+import { FriendList, SteamProfile, FriendPositions, RecentlyPlayed, FriendsAdded, SteamNames } from '@/components/types'; // Getting types
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { CameraControls, Text } from '@react-three/drei';
 import { useState, useRef, useEffect, useMemo} from "react";
 
 import { getSteamProfile, getFriendsList, getRecentGames } from "./steamapi";
@@ -33,6 +33,7 @@ interface LabelProps {
         "calledID": string
     };
     id: string;
+    currentSteamNames: SteamNames;
     timestamp : number;
     clicked : (pInfo: ParticleInfo) => void;
 }
@@ -46,6 +47,7 @@ interface FriendProps {
     friendsListProp: (newFriends : FriendList | null) => void;
     friendsPositionProp: (newFriendsPos : FriendPositions | null) => void;
     friendsAddedProp: FriendsAdded;
+    currentSteamNames : SteamNames;
 }
 
 interface CameraAnimationProps {
@@ -68,11 +70,15 @@ const getHSL = (x: number, y: number) => {
   return `hsl(${hue}, ${saturation}%, ${lightness})`;
 }
 
-function Three({position, id, timestamp, clicked} : LabelProps){
+function Three({position, id, currentSteamNames, timestamp, clicked} : LabelProps){
     // This reference will give us direct access to the THREE.Mesh object
     const ref = useRef<THREE.Mesh>(null!);
-    // const textRef = useRef<THREE.Mesh>(null!);
+    const textRef = useRef<THREE.Mesh>(null!);
     const [active, setActive] = useState(false);
+
+    const { camera } = useThree();
+
+    const steamName = currentSteamNames[id]? currentSteamNames[id] : "?";
 
     const uniforms = useMemo(
         () => ({
@@ -96,7 +102,8 @@ function Three({position, id, timestamp, clicked} : LabelProps){
           if (ref.current) ref.current.rotation.y -= 0.001;
           if (ref.current) ref.current.rotation.z += 0.001;
         }
-        
+
+        if (textRef.current) textRef.current.lookAt(camera.position);        
         (ref.current.material as THREE.ShaderMaterial).uniforms.u_time.value = 0.5 * clock.getElapsedTime(); // Type ShaderMaterial needed to get the unforms... to register
     });
 
@@ -134,9 +141,9 @@ function Three({position, id, timestamp, clicked} : LabelProps){
                 {/* <meshStandardMaterial color={getHSL(position.x, position.y)}/> */}
 
             </mesh>
-            {/* {active && (
-                <Text ref={textRef} fontSize={5} position={[position.x,position.y + 15,position.z]}>ID: {id}</Text>
-            )} */}
+            {active && (
+                <Text ref={textRef} fontSize={5} position={[position.x,position.y + 15,position.z]}>{steamName}</Text>
+            )}
         </>
     );
 }
@@ -152,13 +159,13 @@ const stateStyle: {[id: number] : string} = {
 }
  
   
-function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositions, friendsListProp, friendsPositionProp, friendsAddedProp}  : FriendProps ) {
+function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositions, friendsListProp, friendsPositionProp, friendsAddedProp, currentSteamNames}  : FriendProps ) {
     const [friendProfile, setFriendProfile] = useState< SteamProfile | null>(null);
     const [recentGames, setRecentGames] = useState< RecentlyPlayed | null>(null);
     const [error, setError] = useState< string | null >(null);
 
-    const [loading, setLoading] = useState<boolean>(true);
-
+    const [loading, setLoading] = useState<boolean>(false);
+    const [chainHeight, setChainHeight] = useState<number>(0);
   
     const getSign = () => {
       return Math.random() < 0.5 ? 1 : -1
@@ -182,25 +189,43 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
       friend_since_date = ""
     }
 
-    useEffect(() => { ( 
-      async () => 
-        {
-          setLoading(true);
-          const steamProfile = await getSteamProfile(friend_id);
-          const recentlyPlayed = await getRecentGames(friend_id);
-          setFriendProfile(steamProfile);
-          setRecentGames(recentlyPlayed)
-          if (friendProfile && recentGames){
-            setLoading(false)
-          }         
-        })
-        () 
-      }, [friend_id])//The dependency array [friend_id] executes this await function call whenever the friend_id from FriendProps changes. i.e., when a different particle is cliked. If the friend_id is the same, no new await call is made
+    const friend_chain = []
+    let current_id = friend_id;
+    let next_id;
+
+    while (current_id !== "") {
+      next_id = allPositions[current_id].calledID;
+      friend_chain.push(current_id);
+      current_id = next_id;
+    }
+    friend_chain.pop();
+
+    const fiberLineStyle = {
+      maxHeight: chainHeight + "px", 
+    }
+
+    useEffect(() => {
+      const fetchData = async () => {
+        setLoading(true); 
+        const steamProfile = await getSteamProfile(friend_id);
+        const recentlyPlayed = await getRecentGames(friend_id);
   
+        setFriendProfile(steamProfile); 
+        setRecentGames(recentlyPlayed); 
+  
+        if (steamProfile && recentlyPlayed) {
+          setLoading(false); 
+          currentSteamNames[steamProfile.steamid] = steamProfile.personaname;
+        }
+      };
+    
+      fetchData(); // Call the async function
+    }, [friend_id]); // Dependency array ensures the effect runs when friend_id changes
+    
     // https://react.dev/reference/rsc/server-components
       if (friendProfile && recentGames && !loading) {
-        const setNewFocus = () => {
-          const currParticlePos = allPositions[friend_id]
+        const setNewFocus = (focus_id : string) => {
+          const currParticlePos = allPositions[focus_id]
           setFocus([currParticlePos.x,currParticlePos.y,currParticlePos.z]);
         }
 
@@ -241,6 +266,7 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
                     "y": (getSign() * Math.random() * (max - min) + min) + currParticlePos.y,
                     "z": currParticlePos.z + (forward * (Math.random() * 50 + 25)),
                     "timestamp": friend.friend_since,
+                    "calledFriend": friendProfile.personaname,
                     "calledID": friend_id
                 }
                 newFriendsPos[friend.steamid] = pos
@@ -264,7 +290,7 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
               <div id='profile-buttons'>
                 <h4>{stateStyle[friendProfile.personastate]}</h4>
                 <div id='copy-focus'>
-                  <img src="/images/focus.svg" height={30} width={30} onClick={() => setNewFocus()} className='cursor-pointer' fetchPriority='low' alt={`Click to focus on ${friendProfile.personaname}`}></img>
+                  <img src="/images/focus.svg" height={30} width={30} onClick={() => setNewFocus(friend_id)} className='cursor-pointer' fetchPriority='low' alt={`Click to focus on ${friendProfile.personaname}`}></img>
                   <img src="/images/copy.svg" height={30} width={30} onClick={() => copyToClipboard()} className='cursor-pointer' fetchPriority='low' alt={`Click to copy ${friendProfile.personaname}'s Steam id`}></img>
                   <img fetchPriority='low' src='/images/hide.svg' width={30} height={30} onClick={() => hideProfile()} className='cursor-pointer' alt='Click to hide Friend Profile' id='friend-hide-btn'></img>
                 </div>
@@ -302,6 +328,37 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
               <br/>
             </>
             }
+
+            {/* Friend Chain */}
+            {friend_chain.length > 0 && 
+            <>                
+              <h2>Your Thread:</h2>
+              <div id='thread-container'>
+                <div id='fiber-line' style={fiberLineStyle}></div>
+                <button className='thread-btn' onClick={() => setNewFocus(friend_id)} onMouseEnter={() => {window.innerWidth > 700? setChainHeight(18) : setChainHeight(15)}} onMouseLeave={() => {setChainHeight(0)}}>
+                  {friendProfile.personaname}
+                </button>
+                {friend_chain.map((link, index) => {
+                  return (
+                    <>
+                      {/* <img fetchPriority='low' src="/images/arrow-up.svg" width={10} height={10} alt={`Down arrow for thread`}></img> */}
+                      <button className='thread-btn' onClick={() => setNewFocus(allPositions[link].calledID)} onMouseEnter={() => {window.innerWidth > 700? setChainHeight( (18 * (index + 2)) + (10 * (index + 1)) ) : setChainHeight( (15 * (index + 2)) + (10 * (index + 1)) )}} onMouseLeave={() => {setChainHeight(0)}}>
+                        {allPositions[link].calledFriend}
+                      </button>
+                    </>
+                    
+                  )
+                })}
+              </div>
+            </>}
+            {/* <>
+              <h2>Your Thread:</h2>
+              <p>{friendProfile.personaname}</p>
+              {friend_chain && friend_chain.map((link) => {
+                <p>{allPositions[link[0]].calledFriend}</p>
+              })}
+            </> */}
+            <br/>
           </div>
         )
       } 
@@ -353,14 +410,16 @@ interface FiberPageProps {
     steamProfileProp : SteamProfile;
     friendsListProp : FriendList;
     friendsPositionProp : FriendPositions;
-    friendsAddedProp : FriendsAdded
+    friendsAddedProp : FriendsAdded;
+    steamNamesProps: SteamNames;
 }
 
-export function FiberPage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp} : FiberPageProps) {
+export function FiberPage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : FiberPageProps) {
     const [steamProfile] = useState<SteamProfile>(steamProfileProp);
     const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
     const [friendsPos, setFriendsPos] = useState<FriendPositions | null>(friendsPositionProp);
     const friendsAdded = friendsAddedProp;
+    const steamNames = steamNamesProps;
 
     const [displayedSteamId, setDisplayedSteamId] = useState<ParticleInfo | null>(null);
 
@@ -500,10 +559,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       setVisibleProfile(false);
     }
   
-    // const goHome = () => {
-    //   window.location.reload();
-    // }
-  
     // camera control buttons
     const fourdegrees = () => {
       const sign = (horizontalCamera === "right")? 1 : -1;
@@ -601,7 +656,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
             <div id='fiberpage-container'>
               <Canvas camera={{near: 1, far:1500} }> {/* far: 1000 seems to be when objects clip at the furthest distance*/}
                 {/* This is the user's particle */}
-                <Three position={{"x": 0,"y": 0,"z": 0,"timestamp": 0,"calledID": ""}} key={steamProfile.steamid} id={steamProfile.steamid} timestamp={0} clicked={handleClick}/>
+                <Three position={{"x": 0,"y": 0,"z": 0,"timestamp": 0,"calledID": ""}} key={steamProfile.steamid} id={steamProfile.steamid} currentSteamNames={steamNames} timestamp={0} clicked={handleClick}/>
     
                 {/* Looping over friendsList to create a new particle for each friend naively */}
                 {/* A more optimized approach is to use instancing, but I'll save the optimization for the future as I get better with THREE */}
@@ -611,7 +666,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     
                 {friendsList.friends.map((friend) => {
                   return (
-                      <Three position={friendsPos[friend.steamid]} key={friend.steamid} id={friend.steamid} timestamp={friend.friend_since} clicked={handleClick}/>
+                      <Three position={friendsPos[friend.steamid]} key={friend.steamid} id={friend.steamid} currentSteamNames = {steamNames} timestamp={friend.friend_since} clicked={handleClick}/>
                   )
                 })}
                 {displayedSteamId && <Tube po={displayedSteamId} allPositions = {friendsPos}/>}
@@ -624,7 +679,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                 </div> */}
                 <div id='star-bg'></div>
                 <button id='friend-close-btn' onClick={turnOff}>X</button>
-                <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} hideFriend={hideFriendProfile} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded}/>
+                <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} hideFriend={hideFriendProfile} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded} currentSteamNames = {steamNames}/>
               </div>
               </>
               }
@@ -632,7 +687,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
               {showUI && <>
                 <form id='search-container' onSubmit={handleSubmit}>
                   <input
-                      type="number"
+                      type="text"
                       value={search}
                       name="input-search-steamID"
                       onChange={(e) => setSearch(e.target.value)}

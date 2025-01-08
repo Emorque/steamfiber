@@ -41,8 +41,7 @@ export async function getFriendsList(steam_id: string) : Promise<FriendList | nu
         return data.friendslist;
     }
     catch (error) {
-        console.error(error);
-        console.log("hitherer")
+        // console.error(error);
         return null;
     }
 }

@@ -35,7 +35,7 @@
     font-size: medium;
     margin: 0;
     padding: 0;
-    color: white;
+    color: #eaeaea;
     cursor: pointer;
 }
 
@@ -46,7 +46,7 @@
 #close-form-btn {
     cursor: pointer;
     background-color: black;
-    color: white;
+    color: #eaeaea;
     font-weight: bold;
     border: 0;
     font-size: large;
@@ -108,7 +108,7 @@
 }
 
 a {
-    color: white;
+    color: #eaeaea;
     font-weight: bold;
     transition: all 0.5s ease;
 }
@@ -126,7 +126,7 @@ a:hover {
 
 input[type="submit"] {
     background-color: #1d242c;
-    color: white;
+    color: #eaeaea;
     border: solid 1px #8f8f8f;
     padding: 1px 6px;
 }
@@ -139,7 +139,7 @@ input[type="submit"] {
 
 #info-button {
     background-color: #1d242c;
-    color: white;
+    color: #eaeaea;
     border: solid 1px #8f8f8f;
     position: absolute;
     right: 16px;
