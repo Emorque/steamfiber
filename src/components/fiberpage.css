@@ -154,16 +154,24 @@
     }
 }
 
-.thread-btn {
+.thread-btn, .steam-names-btn  {
     border: 0;
     background-color: transparent;
     padding: 0;
+    text-align: start;
+}
+
+.steam-names-btn {
+    color: #eaeaea;
+    width: 100%;
+}
+
+.thread-btn {
     transition: opacity 300ms ease;
     width: 100%;
-    text-align: start;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis
+    text-overflow: ellipsis;
 }
 
 #thread-container:hover > .thread-btn {
@@ -226,10 +234,52 @@
     }
 }
 
-#search-container {
+#search-wrapper {
     position: absolute;
     top:10px;
     left:10px;
+    height: auto;
+    width: fit-content;
+}
+#search-container {
+    position: relative;
+    width: fit-content;
+    /* top:10px;
+    left:10px; */
+}
+
+#prev-users-wrapper {
+    position: relative;
+    background-color: #000000;
+    padding-top: 5px;
+    height: 125px;
+    width: 100%;
+
+    max-height: 125px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    overflow: hidden;
+    z-index: 10;
+}
+
+#previous-users {
+    /* position: relative; */
+    /* background-color: #000000; */
+    /* z-index: 30; */
+    /* padding-top: 1px; */
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    width: 100%;
+    max-width: 155px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-color: #eaeaea #0d0c1113;
+    scrollbar-width: thin;
+    /* overflow-x: hidden; */
 }
 
 #camera-container {
@@ -321,7 +371,7 @@ input[type="text"] {
     color: black;
     border: solid 1px #8f8f8f;
     padding: 1px 6px;
-    width: 125px;
+    width: 100px;
 }
 
 #error-text {
@@ -404,10 +454,13 @@ p, #add-friends-btn, .thread-btn {
 }
 
 
-@media (min-width: 350px) {
+@media (min-width: 370px) {
     input[type="text"] {
-        width: 140px;
+        width: 120px;
     } 
+    #previous-users {
+        max-width: 175px;
+    }
 }
 
 
@@ -415,4 +468,7 @@ p, #add-friends-btn, .thread-btn {
     input[type="text"] {
         width: 155px;
     } 
+    #previous-users {
+        max-width: 210px;
+    }
 }

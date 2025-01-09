@@ -335,18 +335,14 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
               <h2>Your Thread:</h2>
               <div id='thread-container'>
                 <div id='fiber-line' style={fiberLineStyle}></div>
-                <button className='thread-btn' onClick={() => setNewFocus(friend_id)} onMouseEnter={() => {window.innerWidth > 700? setChainHeight(18) : setChainHeight(15)}} onMouseLeave={() => {setChainHeight(0)}}>
+                <button className='thread-btn' key={`${friendProfile.personaname}'s friend thread`} onClick={() => setNewFocus(friend_id)} onMouseEnter={() => {window.innerWidth > 700? setChainHeight(18) : setChainHeight(15)}} onMouseLeave={() => {setChainHeight(0)}}>
                   {friendProfile.personaname}
                 </button>
                 {friend_chain.map((link, index) => {
                   return (
-                    <>
-                      {/* <img fetchPriority='low' src="/images/arrow-up.svg" width={10} height={10} alt={`Down arrow for thread`}></img> */}
-                      <button className='thread-btn' onClick={() => setNewFocus(allPositions[link].calledID)} onMouseEnter={() => {window.innerWidth > 700? setChainHeight( (18 * (index + 2)) + (10 * (index + 1)) ) : setChainHeight( (15 * (index + 2)) + (10 * (index + 1)) )}} onMouseLeave={() => {setChainHeight(0)}}>
+                      <button className='thread-btn' key={`${link} at index ${index}`} onClick={() => setNewFocus(allPositions[link].calledID)} onMouseEnter={() => {window.innerWidth > 700? setChainHeight( (18 * (index + 2)) + (10 * (index + 1)) ) : setChainHeight( (15 * (index + 2)) + (10 * (index + 1)) )}} onMouseLeave={() => {setChainHeight(0)}}>
                         {allPositions[link].calledFriend}
-                      </button>
-                    </>
-                    
+                      </button>                    
                   )
                 })}
               </div>
@@ -433,6 +429,9 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const [search, setSearch] = useState<string>('');
     const [freeRoam, setFreeRoam] = useState<string>("free roam");
 
+    const [previousUsers, setPreviousUser] = useState<string[]>([]);
+    const [visibleDatabase, setVisibleDatabase] = useState<boolean>(false);
+
     const [disabledRandom, setDisabledRandom] = useState<boolean>(false);
 
     const [visibleProfile, setVisibleProfile] = useState<boolean>(true);
@@ -480,28 +479,40 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       setBgColor("#0B1829");
     }
   
-    const handleSubmit = async (event : React.FormEvent) => {
+    const handleSubmit = async (event: React.FormEvent) => {
       event.preventDefault();
       if (friendsPos) {
-        if (search in friendsPos) {
-          const position = friendsPos[search];
-          const info : ParticleInfo = {
-            pId: search,
-            friend_since : position.timestamp,
-            x: position.x,
-            y: position.y, 
-            z: position.z
-          }
+        let user = search;
 
-          setDisplayedSteamId(info);
-          setBgColor(getProfileHSL(info.x,info.y));
-          setCameraPos([position.x, position.y, position.z]);
+        // Checking for steamName
+        for (const [key, value] of Object.entries(steamNames)) {
+          if (value === user) {
+            user = key;  
+            break;
+          }
         }
-        else {
+        
+        // Check if user is in friendsPos
+        if (user in friendsPos) {
+          const position = friendsPos[user];
+          const info: ParticleInfo = {
+            pId: user,
+            friend_since: position.timestamp,
+            x: position.x,
+            y: position.y,
+            z: position.z,
+          };
+    
+          // State updates (ensure these happen outside the render)
+          setDisplayedSteamId(info);
+          setBgColor(getProfileHSL(info.x, info.y));
+          setCameraPos([position.x, position.y, position.z]);
+        } else {
           alert('Friend Id not Found');
         }
-      }    
-    }
+      }
+    };
+    
   
     const randomFriend = () => {
       if (friendsPos) {
@@ -607,6 +618,10 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         setHorizontalCamera("right");
       }
     }
+
+    const toggleDatabase = () => {
+      setVisibleDatabase(!visibleDatabase);
+    }
   
     const cameraStyle = {
       maxHeight: cameraSettings? Math.min(277, window.innerHeight - 136) : 0,
@@ -630,6 +645,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const randomBtnStyle = {
       opacity: disabledRandom? 0.2: 1,
       transition: "opacity 0.25s linear"
+    }
+
+    const prevUsersStyle = {
+      maxHeight: visibleDatabase? Math.min(125, 25 * Object.keys(steamNames).length): 0,
+      transition: "max-height 0.5s ease",
     }
   
     const toggleVerticalCamera = () => {
@@ -685,18 +705,34 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
               }
 
               {showUI && <>
-                <form id='search-container' onSubmit={handleSubmit}>
-                  <input
-                      type="text"
-                      value={search}
-                      name="input-search-steamID"
-                      onChange={(e) => setSearch(e.target.value)}
-                  />
-                  <input 
-                      type="submit"
-                      style={{cursor:'pointer'}}
-                  />
-                </form>
+                <div id='search-wrapper'>
+                  <form id='search-container' onSubmit={handleSubmit}>
+                    <input
+                        type="text"
+                        value={search}
+                        name="input-search-steamID"
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <input 
+                        type="submit"
+                        style={{cursor:'pointer'}}
+                    />
+                  </form>
+                  <button className="database-btn" onClick={toggleDatabase}>
+                      <img src="/images/database.svg" width={15} height={15}></img>
+                  </button>
+                  <div id='prev-users-wrapper' style={prevUsersStyle}>
+                    <div id='previous-users'>
+                      {Object.entries(steamNames).map(([key,value]) => {
+                        return (
+                          <button key={`button for user ${value}`} className='steam-names-btn' onClick={() => {setSearch(value)}}>
+                            {value}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
                 <div id='camera-container'>
                   <div id='select-btns'> 
                     <button onClick={randomFriend} style={{border: 0, backgroundColor: "transparent", padding: 0}} disabled={disabledRandom}>

@@ -104,6 +104,10 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         transition: 'all 0.5s ease'
     }
 
+    const databaseStyle = {
+        maxHeight: Math.min(localIds.length * 35, 200)
+    }
+
     const handleSubmit = async (event : React.FormEvent) => {
         event.preventDefault();
         // console.log(checkedIds);
@@ -234,8 +238,9 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                 </div>
 
                 {databaseComponent && (
-                    <div id="database-wrapper">
+                    <div id="database-wrapper" style={databaseStyle}>
                         <button id="close-database-btn" onClick={hideDatabaseComponent} disabled={disabledButton}>X</button>
+                        <h2 id="database-title">Previous Searches</h2>
                         <div id="database-component">
                             {localIds.map(([key, value]) => {
                                 return (
@@ -250,6 +255,15 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                                 )
                             })}
                         </div>
+                        {/* <div className="database-btns" >
+                            <button className="steamName-btn">
+                                key
+                            </button>
+                            <button className="steamName-btn">
+                                X
+                            </button>
+                        </div>
+                         */}
                     </div>
                 )}    
 
