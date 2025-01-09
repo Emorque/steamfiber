@@ -429,7 +429,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     const [search, setSearch] = useState<string>('');
     const [freeRoam, setFreeRoam] = useState<string>("free roam");
 
-    const [previousUsers, setPreviousUser] = useState<string[]>([]);
     const [visibleDatabase, setVisibleDatabase] = useState<boolean>(false);
 
     const [disabledRandom, setDisabledRandom] = useState<boolean>(false);
@@ -719,11 +718,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                     />
                   </form>
                   <button className="database-btn" onClick={toggleDatabase}>
-                      <img src="/images/database.svg" width={15} height={15}></img>
+                      <img src="/images/database.svg" width={15} height={15} alt='button for toggling list of steam names previously seen'></img>
                   </button>
                   <div id='prev-users-wrapper' style={prevUsersStyle}>
                     <div id='previous-users'>
-                      {Object.entries(steamNames).map(([key,value]) => {
+                      {Object.values(steamNames).map((value) => {
                         return (
                           <button key={`button for user ${value}`} className='steam-names-btn' onClick={() => {setSearch(value)}}>
                             {value}

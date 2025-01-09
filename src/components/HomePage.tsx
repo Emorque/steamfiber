@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { FriendList, Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions, SteamNames } from '@/components/types'; // Getting types
 import { getSteamProfile, getFriendsList } from "./steamapi";
@@ -45,7 +45,28 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const [idError, setIdError] = useState< string | null >(null)
     const [animation, startAnimation] = useState<boolean>(false);
 
+    const [localIds, setLocalIds] = useState<string[][]>([]);
+
     const [checkedIds] = useState<IdSubmissions>(new Set<string>());
+
+    useEffect(()=> {
+        const tempLocalIds : string[][]= []
+        
+        // const localIds: string[][] = []
+        // Getting the used ids from local storage
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i); // Get the key at index i
+            if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {
+            const value = localStorage.getItem(key); // Get the value associated with that key
+            if (value) {
+                tempLocalIds.push([key, value]);
+            }
+            }
+        }
+        setLocalIds(tempLocalIds);
+    }, [])
+
+
 
     function SteamIdError(error_message : string) {
         setIdError(error_message)
@@ -66,17 +87,17 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         setDatabaseComponent(false);
     }
 
-    const localIds: string[][] = []
-    // Getting the used ids from local storage
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i); // Get the key at index i
-        if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {
-          const value = localStorage.getItem(key); // Get the value associated with that key
-          if (value) {
-            localIds.push([key, value]);
-          }
-        }
-    }
+    // const localIds: string[][] = []
+    // // Getting the used ids from local storage
+    // for (let i = 0; i < localStorage.length; i++) {
+    //     const key = localStorage.key(i); // Get the key at index i
+    //     if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {
+    //       const value = localStorage.getItem(key); // Get the value associated with that key
+    //       if (value) {
+    //         localIds.push([key, value]);
+    //       }
+    //     }
+    // }
 
     const setSteamName = (steamName: string) => {
         setSteamId(steamName);
@@ -228,7 +249,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                             />
                         </form>
                         <button className="database-btn" onClick={showDatabase}>
-                            <img src="/images/database.svg" width={15} height={15}></img>
+                            <img src="/images/database.svg" width={15} height={15} alt="button for toggling local storage of previously searched users"></img>
                         </button>
                     </div>
                     <div>
@@ -239,8 +260,10 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
 
                 {databaseComponent && (
                     <div id="database-wrapper" style={databaseStyle}>
-                        <button id="close-database-btn" onClick={hideDatabaseComponent} disabled={disabledButton}>X</button>
-                        <h2 id="database-title">Previous Searches</h2>
+                        <div id="database-btn-wrapper">
+                            <h2 id="database-title">Previous Searches</h2>    
+                            <button id="close-database-btn" onClick={hideDatabaseComponent} disabled={disabledButton}>X</button>
+                        </div>
                         <div id="database-component">
                             {localIds.map(([key, value]) => {
                                 return (
@@ -277,6 +300,11 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                         <p>SteamFiber can only display your friends if your Steam Community profile visibility is set to &quot;Public&quot;</p>
                         <br/>
                         <img id="help-image" src="/images/account.webp" alt="Acccount details page for a Steam User" width={294} height={130}></img>
+
+                        <h2>Sign in through steam</h2>
+                        <button>
+                            <img src="/images/sits_01.png"></img>
+                        </button>
                     </div>
                 )}    
 
