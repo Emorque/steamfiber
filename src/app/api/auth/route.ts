@@ -1,6 +1,6 @@
 import { getOpenID } from "@/utils/openid"
 
-export async function GET(request: Request) {
+export async function GET() {
     const url: string = await new Promise((resolve, reject) =>
         getOpenID().authenticate("https://steamcommunity.com/openid", false, (error, url) => {
             if (error) {

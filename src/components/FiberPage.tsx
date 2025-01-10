@@ -335,12 +335,34 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
               <h2>Your Thread:</h2>
               <div id='thread-container'>
                 <div id='fiber-line' style={fiberLineStyle}></div>
-                <button className='thread-btn' key={`${friendProfile.personaname}'s friend thread`} onClick={() => setNewFocus(friend_id)} onMouseEnter={() => {window.innerWidth > 700? setChainHeight(18) : setChainHeight(15)}} onMouseLeave={() => {setChainHeight(0)}}>
+                <button className='thread-btn' key={`${friendProfile.personaname}'s friend thread`} 
+                  onClick={() => setNewFocus(friend_id)} 
+                  onMouseEnter={() => {
+                    if (window.innerWidth > 700) {
+                      setChainHeight(18);
+                    }
+                    else {
+                      setChainHeight(15);
+                    }
+                    // window.innerWidth > 700? setChainHeight(18) : setChainHeight(15)}
+                  }}
+                  onMouseLeave={() => { setChainHeight(0)} }>
                   {friendProfile.personaname}
                 </button>
                 {friend_chain.map((link, index) => {
                   return (
-                      <button className='thread-btn' key={`${link} at index ${index}`} onClick={() => setNewFocus(allPositions[link].calledID)} onMouseEnter={() => {window.innerWidth > 700? setChainHeight( (18 * (index + 2)) + (10 * (index + 1)) ) : setChainHeight( (15 * (index + 2)) + (10 * (index + 1)) )}} onMouseLeave={() => {setChainHeight(0)}}>
+                      <button className='thread-btn' key={`${link} at index ${index}`} 
+                        onClick={() => setNewFocus(allPositions[link].calledID)} 
+                        onMouseEnter={() => {
+                          if (window.innerWidth > 700) {
+                            setChainHeight( (18 * (index + 2)) + (10 * (index + 1)) );
+                          }
+                          else {
+                            setChainHeight( (15 * (index + 2)) + (10 * (index + 1)) );
+                          }
+                          //  setChainHeight( (15 * (index + 2)) + (10 * (index + 1)) )
+                        }}
+                        onMouseLeave={() => {setChainHeight(0)}}>
                         {allPositions[link].calledFriend}
                       </button>                    
                   )
@@ -396,10 +418,7 @@ const getProfileHSL = (x: number, y: number) => {
       return "#0B1829"; 
     }
     const hue = ((Math.atan2(y, x) * 180) / Math.PI) + 180;
-    // const saturation = (Math.sqrt(x**2 + y**2));
-    // const lightness = "50%";
     return `hsl(${hue}, 60%, 15%)`;
-  
 }
   
 interface FiberPageProps {
