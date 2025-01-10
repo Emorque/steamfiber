@@ -23,6 +23,7 @@ export type FriendPositions =  {
         "y": number, 
         "z": number,
         "timestamp": number,
+        "calledFriend": string,
         "calledID": string
     } // x,y,z,unix timestamp,id of the user who was queried by getFriendsList
 }
@@ -45,3 +46,7 @@ export type FriendsAdded = {
 }
 
 export type IdSubmissions = Set<string>;
+
+export type SteamNames = {
+    [id: string] : string
+}
