@@ -1,8 +1,9 @@
 import { getOpenID } from "@/utils/openid"
+const baseURL = process.env.APP_URL
 
 export async function GET(request: Request) {
     const url = new URL(request.url)
-    console.log("|");
+    console.log("temp");
     console.log(url);
 
     const result: {
@@ -34,5 +35,5 @@ export async function GET(request: Request) {
     const [steamId] = result.claimedIdentifier!.match(/(\d+)$/)!
     console.log(steamId);
     const data = Buffer.from(JSON.stringify(steamId), 'utf8').toString('base64');
-    return Response.redirect(`http://localhost:3000/#data=${data}`, 302)
+    return Response.redirect(`${baseURL}#data=${data}`, 302)
   }
