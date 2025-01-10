@@ -50,34 +50,42 @@
     font-weight: bold;
     border: 0;
     font-size: large;
+
+    position: absolute;
+    right: 0;
+    transform: translate(0, -40px);
+    width: fit-content;
+    height: fit-content;
+    padding: 5px;
+    cursor: pointer;
 }
 
 #form-container {
     display: flex;
     flex-direction: column;
-    /* justify-content: center; */
-    /* align-items: start; */
     gap: 10px;
     background-color: #000000ad;
     padding: 10px 30px 10px 10px;
-    /* padding-right: 30px; */
     border-radius: 10px;
-    /* width: 50%; */
-    /* min-width: 20px; */
+}
+
+#btn-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
 }
 
 #database-wrapper {
     position: absolute;
-
     background-color: #000000e0;
-    /* padding: 10px; */
     width: 50%;
     min-width: 250px;
     max-width: 300px;
     gap: 15px;
-
     height: 50%;
-    /* max-height: 300px; */
+    /* Max height is being calculated in the tsx styling for this div */
+    /* max-height: 300px; */ 
     border-radius: 5px;
 }
 
@@ -93,9 +101,6 @@
 }
 
 #database-title {
-    /* position: absolute;
-    left: 0;
-    transform: translate(0, -30px); */
     width: fit-content;
     height: fit-content;
     padding: 5px;
@@ -135,33 +140,80 @@
     min-width: 250px;
 }
 
-#help-component{
+#help-wrapper {
     position: absolute;
-    z-index: 10;
     background-color: #000000e0;
+    max-width: 400px;
+    height: 50%;
+    max-height: 420px;
+    border-radius: 5px;
+}
+
+#signIn-wrapper {
+    position: absolute;
+    background-color: #000000e0;
+    max-width: 400px;
+    height: 50%;
+    max-height: 350px;
+    border-radius: 5px;
+}
+
+#signIn-component {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: 10px;
     padding: 10px;
-    width: 50%;
-    min-width: 250px;
-    max-width: 400px;
-    img {
-        height: auto;
-        width: auto
-    }
-    button {
-        position: absolute;
-        right: 0;
-        transform: translate(0, -40px);
-        width: fit-content;
-        height: fit-content;
-        padding: 5px;
-        cursor: pointer;
-    }
+    z-index: 10;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+
+    scrollbar-color: #eaeaea #000000;
+    scrollbar-width: thin;
+}
+
+#close-signIn-btn {
+    position: absolute;
+    right: 0;
+    transform: translate(0, -20px);
+    width: fit-content;
+    height: fit-content;
+    padding: 5px;
+    cursor: pointer;
+}
+
+#help-component{
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+
+    padding: 10px;
+    z-index: 10;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+
+    
+    scrollbar-color: #eaeaea #000000;
+    scrollbar-width: thin;
+}
+
+#signInBtn {
+    padding: 10px;
+    background-color: black;
+    text-align: center;
+    width: fit-content;
+    margin: 10px 0px;
+    border-radius: 10px;
+}
+
+#signInBtn:hover {
+    background-color: #1d242c;
 }
 
 #help-image {
-    display: none;
+    margin: 0 auto;
 }
 
 a {
@@ -195,10 +247,6 @@ input[type="submit"] {
     position: absolute;
     background-color: transparent;
     padding: 0px 6px;
-    /* margin: 0; */
-    /* display: flex; */
-    /* align-items: center; */
-    /* justify-content: center; */
 }
 
 .steamName-btn {
@@ -207,10 +255,6 @@ input[type="submit"] {
     padding: 0;
     width: fit-content;
     text-align: start;
-    /* overflow-y: hidden; */
-    /* white-space: nowrap; */
-    /* text-overflow: ellipsis; */
-
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -222,10 +266,7 @@ input[type="submit"] {
     margin-right: 10px;
 }
 
-#close-database-btn {
-    /* position: absolute;
-    right: 0;
-    transform: translate(0, -30px); */
+#close-database-btn, #close-signIn-btn {
     width: fit-content;
     height: fit-content;
     padding: 5px;
@@ -237,12 +278,6 @@ input[type="submit"] {
     border: 0;
     font-size: large;
 }
-
-/* input[type="number"] {
-    color: black;
-    border: solid 1px #8f8f8f;
-    padding: 1px 6px;
-} */
 
 #info-button {
     background-color: #1d242c;
@@ -266,13 +301,6 @@ input[type="submit"] {
 .error-text {
     position: absolute;
     background-color: black;
-    color: rgb(243, 81, 81);
     width: fit-content;
     height: fit-content;
-}
-
-@media (min-height: 440px) {
-    #help-image {
-        display: block;
-    }
 }

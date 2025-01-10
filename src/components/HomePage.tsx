@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { FriendList, Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions, SteamNames } from '@/components/types'; // Getting types
 import { getSteamProfile, getFriendsList } from "./steamapi";
 
-
 import { Canvas } from '@react-three/fiber'
 import { HpParticle } from "./HpParticle";
 
@@ -40,9 +39,14 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const [helpComponent, setHelpComponent] = useState<boolean>();
     const [infoComponent, setInfoComponent] = useState<boolean>(false);
     const [databaseComponent, setDatabaseComponent] = useState<boolean>(false);
+    const [signInComponennt, setSignInComponent] = useState<boolean>(false);
+
+
     const [disabledButton, setDisabledButton] = useState<boolean>(false);
 
-    const [idError, setIdError] = useState< string | null >(null)
+    const [idMessage, setIdMessage] = useState< string | null >(null);
+    const [idColor, setIdColor] = useState<string>("white");
+
     const [animation, startAnimation] = useState<boolean>(false);
 
     const [localIds, setLocalIds] = useState<string[][]>([]);
@@ -66,43 +70,60 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         setLocalIds(tempLocalIds);
     }, [])
 
+    useEffect(() => {
+        if (!location.hash) {
+          return
+        }
+    
+        const params = new URLSearchParams(location.hash.replace('#', ''))
+        const data = params.get('data')
+    
+        if (!data) {
+          return
+        }
+
+        const user = atob(data)
+        // quotation marks are in user so those need to be taken out before setting steamId
+        setSteamId(user.substring(1,user.length - 1))
+        SteamIdMessage("Steam ID Obtained");
+      }, [])
 
 
-    function SteamIdError(error_message : string) {
-        setIdError(error_message)
+    function SteamIdMessage(id_message : string) {
+        setIdMessage(id_message)
+        if (id_message === "Steam ID Obtained") {
+            setIdColor("rgb(81, 243, 108)");
+        }
+        else {
+            setIdColor("rgb(243, 81, 81)");
+        }
         setTimeout(() => {
-            setIdError(null)
+            setIdMessage(null);
+            setIdColor("white");
         }, 2000);
     }
 
     const showHelpComponent = () => { setHelpComponent(true) }
     const hideHelpComponent = () => { setHelpComponent(false) }
-    const hideDatabaseComponent = () => {setDatabaseComponent(false)}
 
     const showDatabase = () => { setDatabaseComponent(true)}
+    const hideDatabaseComponent = () => {setDatabaseComponent(false)}
+
+    const showSignInComponent = () => { setSignInComponent(true) }
+    const hideSignInComponent = () => { setSignInComponent(false) }
 
     const handleInfo = () => {
         setInfoComponent(!infoComponent);
         setHelpComponent(false);
         setDatabaseComponent(false);
+        setSignInComponent(false);
     }
-
-    // const localIds: string[][] = []
-    // // Getting the used ids from local storage
-    // for (let i = 0; i < localStorage.length; i++) {
-    //     const key = localStorage.key(i); // Get the key at index i
-    //     if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {
-    //       const value = localStorage.getItem(key); // Get the value associated with that key
-    //       if (value) {
-    //         localIds.push([key, value]);
-    //       }
-    //     }
-    // }
 
     const setSteamName = (steamName: string) => {
         setSteamId(steamName);
         setHelpComponent(false);
         setDatabaseComponent(false);
+        setSignInComponent(false);
     }
 
     const clearSteamName = (steamName: string) => {
@@ -120,42 +141,44 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         transition: 'all 1s ease',
     }
 
-    const errorStyle = {
-        backgroundColor: idError? "rgb(243, 81, 81)" : "white",
+    const messageStyle = {
+        backgroundColor: idColor,
         transition: 'all 0.5s ease'
     }
 
+    const messageTextStyle = {
+        color : idColor,
+        // transition: 'all 2s linear'
+    }
+
     const databaseStyle = {
-        maxHeight: Math.min(localIds.length * 35, 200)
+        maxHeight: Math.min((localIds.length * 35) + 10, 200)
     }
 
     const handleSubmit = async (event : React.FormEvent) => {
         event.preventDefault();
-        // console.log(checkedIds);
         let steamProfile;
         if (localStorage.getItem(steamId)){
             const id = localStorage.getItem(steamId);
-            // console.log(id);
             if (id) {
                 steamProfile = await getSteamProfile(id);
             }
             else{
-                SteamIdError("Invalid Steam ID");
+                SteamIdMessage("Invalid Steam ID");
                 return
             }
         }
-        // console.log(steamId);
         else {
             if (!validId(steamId)) {
-                SteamIdError("Invalid Steam ID");
+                SteamIdMessage("Invalid Steam ID");
                 return
             }
             if (!(steamId)) {
-                SteamIdError("Please Enter your Steam ID");
+                SteamIdMessage("Please Enter your Steam ID");
                 return
             }
             if (checkedIds.has(steamId)) {
-                SteamIdError("Enter a different Steam ID");
+                SteamIdMessage("Enter a different Steam ID");
                 return
             }
             steamProfile = await getSteamProfile(steamId);
@@ -164,14 +187,14 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
             steamProfileProp(steamProfile);
         } else {
             checkedIds.add(steamId);
-            SteamIdError("Invalid Steam ID");
+            SteamIdMessage("Invalid Steam ID");
             return;
         }
 
         const fList = await getFriendsList(steamProfile.steamid);
         if (!fList) {
             checkedIds.add(steamId);
-            SteamIdError("Profile is Private");
+            SteamIdMessage("Profile is Private");
             return;
         }
         if (fList) {
@@ -238,7 +261,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                         <form onSubmit={handleSubmit}> 
                             <input
                                 type="text"
-                                style={errorStyle}
+                                style={messageStyle}
                                 value={steamId}
                                 name="input-steamID"
                                 onChange={(e) => setSteamId(e.target.value)}
@@ -252,9 +275,10 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                             <img src="/images/database.svg" width={15} height={15} alt="button for toggling local storage of previously searched users"></img>
                         </button>
                     </div>
-                    <div>
+                    <div id='btn-container'>
                         <button onClick={showHelpComponent} id="form-button" disabled={disabledButton}>Don&apos;t Know?</button>
-                        {idError && (<p className="error-text">{idError}</p>)}
+                        {idMessage && (<p style={messageTextStyle} className="error-text">{idMessage}</p>)}
+                        <button onClick={showSignInComponent} id="form-button" disabled={disabledButton}>Sign in with Steam</button>
                     </div>
                 </div>
 
@@ -277,36 +301,50 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                                     </div>
                                 )
                             })}
+                            
+                            {/* Useful for testing out the wrapper's handling of overflow */}
+                            {/* <div className="database-btns">
+                                <button className="steamName-btn">
+                                    key
+                                </button>
+                                <button className="steamName-btn">
+                                    X
+                                </button>
+                            </div> */}
                         </div>
-                        {/* <div className="database-btns" >
-                            <button className="steamName-btn">
-                                key
-                            </button>
-                            <button className="steamName-btn">
-                                X
-                            </button>
-                        </div>
-                         */}
                     </div>
                 )}    
 
                 {helpComponent && (
-                    <div id="help-component">
-                        <button id="close-form-btn" onClick={hideHelpComponent} disabled={disabledButton}>X</button>
-                        <p>1. Visit <a href="https://steamcommunity.com/" target="blank">Steam</a> and select your username</p>
-                        <p>2. Select &quot;Account details&quot;</p>
-                        <p>3. Your Steam ID is below your username</p>
-                        <br/>
-                        <p>SteamFiber can only display your friends if your Steam Community profile visibility is set to &quot;Public&quot;</p>
-                        <br/>
-                        <img id="help-image" src="/images/account.webp" alt="Acccount details page for a Steam User" width={294} height={130}></img>
-
-                        <h2>Sign in through steam</h2>
-                        <button>
-                            <img src="/images/sits_01.png"></img>
-                        </button>
+                    <div id="help-wrapper">
+                        <div id="help-component">
+                            <button id="close-form-btn" onClick={hideHelpComponent} disabled={disabledButton}>X</button>
+                            <p>1. Visit <a href="https://steamcommunity.com/" target="blank">Steam</a> and select your username</p>
+                            <p>2. Select &quot;Account details&quot;</p>
+                            <p>3. Your Steam ID is below your username</p>
+                            <br/>
+                            <p>SteamFiber can only display your friends if your Steam Community profile visibility is set to &quot;Public&quot;</p>
+                            <br/>
+                            <img id="help-image" src="/images/account.webp" alt="Acccount details page for a Steam User" width={294} height={130}></img>
+                        </div>
                     </div>
+                    
                 )}    
+
+                {signInComponennt && (
+                    <div id="signIn-wrapper">
+                        <button id="close-signIn-btn" onClick={hideSignInComponent} disabled={disabledButton}>X</button>
+                        <div id="signIn-component">
+                            <p>Logging into SteamFiber with Steam will fetch your Steam ID</p>
+                            <a id="signInBtn" href="/api/auth">
+                                Sign In With Steam
+                            </a>
+                            <p>SteamFiber is a hobby project and is not affiliated with Value or Steam</p>
+                            <p>After clicking the button above, you will be redirected to <span style={{fontStyle: "italic"}}>https://steamcommunity.com</span>, where if you are already signed in, allow requries you to click &quot;Sign In&quot;</p>
+                            <p>SteamFiber does not obtain your username or password, nor is any obtained data stored</p>
+                        </div>
+                    </div>
+                )}
 
                 {infoComponent && (
                     <div id="footer">
