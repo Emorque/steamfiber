@@ -111,6 +111,17 @@
     color: #618cc0;
 }
 
+.toggleBtn {
+    background-color: transparent;
+    border: none;
+    background: none;
+}
+
+.collapsible-header {
+    display: flex;
+    justify-content: space-between;
+}
+
 #game-container{
     display: flex;
     flex-direction: column;

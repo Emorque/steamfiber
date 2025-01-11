@@ -166,6 +166,19 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
 
     const [loading, setLoading] = useState<boolean>(false);
     const [chainHeight, setChainHeight] = useState<number>(0);
+
+    const gameContainerRef = useRef<HTMLDivElement>(null)
+    const [gameContainerHeight, setGameContainerHeight] = useState<number | undefined>(undefined);
+    const [gameContainerReady, setGameContainerReady] = useState<boolean>(false);
+    const [visibleGames, setVisibleGames] = useState<boolean>(true);
+    const [gamesContainerSrc, setGamesContainerSrc] = useState<string>("/images/caret-down-fill.svg");
+
+
+    const threadRef = useRef<HTMLDivElement>(null)
+    const [threadHeight, setThreadHeight] = useState<number | undefined>(undefined);
+    const [threadReady, setThreadReady] = useState<boolean>(false);
+    const [visibleThread, setVisibleThread] = useState<boolean>(true);
+    const [threadSrc, setThreadSrc] = useState<string>("/images/caret-down-fill.svg")
   
     const getSign = () => {
       return Math.random() < 0.5 ? 1 : -1
@@ -204,7 +217,37 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
       maxHeight: chainHeight + "px", 
     }
 
+    const toggleGames = () => { 
+      setVisibleGames(!visibleGames);
+      if (gamesContainerSrc === "/images/caret-right-fill.svg") {
+        setGamesContainerSrc("/images/caret-down-fill.svg")
+      } 
+      else {
+        setGamesContainerSrc("/images/caret-right-fill.svg")
+      }
+    }
+    const toggleThread = () => { 
+      setVisibleThread(!visibleThread); 
+      if (threadSrc === "/images/caret-right-fill.svg") {
+        setThreadSrc("/images/caret-down-fill.svg")
+      } 
+      else {
+        setThreadSrc("/images/caret-right-fill.svg")
+      }
+    }
+
     useEffect(() => {
+      setVisibleGames(false)
+      setGameContainerReady(false);
+      setGameContainerHeight(undefined);
+
+      setVisibleThread(false)
+      setThreadReady(false);
+      setThreadHeight(undefined);
+
+      setThreadSrc("/images/caret-down-fill.svg")
+      setGamesContainerSrc("/images/caret-down-fill.svg");
+
       const fetchData = async () => {
         setLoading(true); 
         const steamProfile = await getSteamProfile(friend_id);
@@ -216,11 +259,56 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
         if (steamProfile && recentlyPlayed) {
           setLoading(false); 
           currentSteamNames[steamProfile.steamid] = steamProfile.personaname;
+          // setGameContainerHeight(gameContainerRef.current?.clientHeight);
+          // console.log(gameContainerHeight);
+          setGameContainerReady(true);
+          setVisibleGames(true);
+          
+          setThreadReady(true);
+          setVisibleThread(true);
         }
       };
     
       fetchData(); // Call the async function
     }, [friend_id]); // Dependency array ensures the effect runs when friend_id changes
+
+    useEffect(() => {
+      console.log("reload");
+      if (gameContainerRef.current && gameContainerReady) {
+          setGameContainerHeight(gameContainerRef.current?.clientHeight + 100);
+          console.log(gameContainerHeight);
+      }
+    }, [gameContainerReady, gameContainerRef, gameContainerHeight]);
+
+    
+    useEffect(() => {
+      console.log("reload");
+      if (threadRef.current && threadReady) {
+          setThreadHeight(threadRef.current?.clientHeight + 100);
+          console.log(gameContainerHeight);
+      }
+    }, [threadReady, threadRef, threadHeight]);
+
+    const gameContainerStyle = {
+      maxHeight : visibleGames? gameContainerHeight : 0,
+      overflow: "hidden",
+      transition : "all 1s ease",
+    }
+
+    const gamesBtnStyle = {
+      content: "",
+      backgroundColor: "transparent",
+      borderLeft: visibleGames? "20px solid #eaeaea" : "20px solid transparent",
+      borderTop: visibleGames? "15px solid transparent": "20px solid #eaeaea",
+      borderBottom: visibleGames? "15px solid transparent": "20px solid transparent",
+      borderRight: visibleGames? "15px solid transparent": "20px solid transparent",
+    }
+
+    const threadStyle = {
+      maxHeight : visibleThread? threadHeight : 0,
+      overflow: "hidden",
+      transition : "all 1s ease",
+    }
     
     // https://react.dev/reference/rsc/server-components
       if (friendProfile && recentGames && !loading) {
@@ -247,6 +335,7 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
             errorFunc("Friends Already Added");
             return;
           }
+
           const friendsFriendList = await getFriendsList(friend_id);
           if (friendsFriendList) {
             const currParticlePos = allPositions[friend_id]
@@ -308,8 +397,13 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
             </div>
             {recentGames.games && 
             <>
-              <h2>Recently Played:</h2>
-              <div id='game-container'>
+              <div className='collapsible-header'>
+                <h2>Recently Played:</h2>
+                <button onClick={toggleGames} className='toggleBtn'>
+                  <img src={gamesContainerSrc}></img>
+                </button>
+              </div>
+              <div id='game-container' ref={gameContainerRef} style={gameContainerStyle}>
                 {recentGames.games && recentGames.games.map((game) => {
                   return (
                     <div className='game' key={game.appid}>
@@ -332,8 +426,13 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
             {/* Friend Chain */}
             {friend_chain.length > 0 && 
             <>                
-              <h2>Your Thread:</h2>
-              <div id='thread-container'>
+              <div className='collapsible-header'>
+                <h2>Your Thread:</h2>
+                <button onClick={toggleThread} className='toggleBtn'>
+                  <img src={threadSrc}></img>
+                </button>
+              </div>
+              <div id='thread-container' ref={threadRef} style={threadStyle}>
                 <div id='fiber-line' style={fiberLineStyle}></div>
                 <button className='thread-btn' key={`${friendProfile.personaname}'s friend thread`} 
                   onClick={() => setNewFocus(friend_id)} 

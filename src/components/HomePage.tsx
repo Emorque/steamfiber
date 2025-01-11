@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { FriendList, Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions, SteamNames } from '@/components/types'; // Getting types
 import { getSteamProfile, getFriendsList } from "./steamapi";
@@ -53,6 +53,10 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
 
     const [checkedIds] = useState<IdSubmissions>(new Set<string>());
 
+    const [formReady, setFormReady] = useState<boolean>(false);
+
+    const formRef = useRef<HTMLFormElement>(null);
+
     useEffect(()=> {
         const tempLocalIds : string[][]= []
         
@@ -85,9 +89,15 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         const user = atob(data)
         // quotation marks are in user so those need to be taken out before setting steamId
         setSteamId(user.substring(1,user.length - 1))
-        SteamIdMessage("Steam ID Obtained");
+        // SteamIdMessage("Steam ID Obtained");
+        setFormReady(true);
       }, [])
 
+      useEffect(() => {
+        if (formRef.current && steamId && formReady) {
+            formRef.current.requestSubmit();
+        }
+      }, [formReady])
 
     function SteamIdMessage(id_message : string) {
         setIdMessage(id_message)
@@ -194,7 +204,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         const fList = await getFriendsList(steamProfile.steamid);
         if (!fList) {
             checkedIds.add(steamId);
-            SteamIdMessage("Profile is Private");
+            SteamIdMessage("Friends List is Private");
             return;
         }
         if (fList) {
@@ -258,7 +268,7 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
                 <div id="form-container" style={opacityStyle}>
                     <p>Enter Steam ID:</p>
                     <div style={{position: "relative"}}>
-                        <form onSubmit={handleSubmit}> 
+                        <form ref={formRef} onSubmit={handleSubmit}> 
                             <input
                                 type="text"
                                 style={messageStyle}
