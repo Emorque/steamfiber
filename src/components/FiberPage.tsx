@@ -295,15 +295,6 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
       transition : "all 1s ease",
     }
 
-    const gamesBtnStyle = {
-      content: "",
-      backgroundColor: "transparent",
-      borderLeft: visibleGames? "20px solid #eaeaea" : "20px solid transparent",
-      borderTop: visibleGames? "15px solid transparent": "20px solid #eaeaea",
-      borderBottom: visibleGames? "15px solid transparent": "20px solid transparent",
-      borderRight: visibleGames? "15px solid transparent": "20px solid transparent",
-    }
-
     const threadStyle = {
       maxHeight : visibleThread? threadHeight : 0,
       overflow: "hidden",
