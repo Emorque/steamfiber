@@ -8,28 +8,14 @@ import { HpParticle } from "./HpParticle";
 
 import "./homepage.css";
 
+import { getSign, validId } from "@/utils/helper";
+
 interface HomePageProps {
     steamProfileProp : (userProfile: SteamProfile | null ) => void;
     friendsListProp : (friends : FriendList | null) => void;
     friendsPositionProp : (friendsPos : FriendPositions | null) => void;
     friendsAddedProp : (originalUser : FriendsAdded | null) => void;
     steamNamesProps : (newSteamNames : SteamNames | null) => void;
-}
-
-function getSign() : number {
-    return Math.random() < 0.5 ? 1: -1
-}
-
-function validId(steam_id: string) {
-    if (steam_id.length !== 17 && steam_id.length !== 16) {
-        return false
-    }
-    for (let i = 0; i < steam_id.length; i++){
-        if (!(steam_id[i] >= '0' && steam_id[i] <= '9' )){
-            return false
-        }
-    }
-    return true
 }
 
 export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : HomePageProps) {

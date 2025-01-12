@@ -16,6 +16,8 @@ import { DEG2RAD } from 'three/src/math/MathUtils.js'
 import { Vertex } from '@/shaders/vertex';
 import { Fragment } from '@/shaders/fragment';
 
+import { getHSL, getSign } from '@/utils/helper';
+
 interface ParticleInfo {
     pId: string,
     friend_since : number,
@@ -54,21 +56,6 @@ interface CameraAnimationProps {
     particlePos : [number,number,number];
     cameraRef: React.RefObject<CameraControls>;
   }
-
-  
-const getHSL = (x: number, y: number) => {
-  // HSL color values are specified with: hsl(hue, saturation, lightness)
-  // Hue: The position of a color on the color wheel, represented as an angle in degrees. Red is 0°, green is 120°, and blue is 240°.
-  // Saturation: The intensity of a color, represented as a percentage. 100% is full saturation, and 0% is a shade of gray.
-  // Lightness: The brightness of a color, represented as a percentage. 100% lightness is white, 0% lightness is black, and 50% lightness is normal.
-  if (x === 0 && y === 0 || x === 100 && y === 100|| x === -100 && y === -100 ) {
-    return `hsl(0, 0%, 100%)`; 
-  }
-  const hue = ((Math.atan2(y, x) * 180) / Math.PI) + 180;
-  const saturation = Math.min(Math.max(Math.sqrt(x**2 + y**2), 10), 80);
-  const lightness = "50%";
-  return `hsl(${hue}, ${saturation}%, ${lightness})`;
-}
 
 function Three({position, id, currentSteamNames, timestamp, clicked} : LabelProps){
     // This reference will give us direct access to the THREE.Mesh object
@@ -179,10 +166,6 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
     const [threadReady, setThreadReady] = useState<boolean>(false);
     const [visibleThread, setVisibleThread] = useState<boolean>(true);
     const [threadSrc, setThreadSrc] = useState<string>("/images/caret-down-fill.svg")
-  
-    const getSign = () => {
-      return Math.random() < 0.5 ? 1 : -1
-    }
 
     const errorStyle = {
       opacity: error? 1 : 0,
@@ -202,6 +185,7 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
       friend_since_date = ""
     }
 
+    // Creating friend-chain thread
     const friend_chain = []
     let current_id = friend_id;
     let next_id;
@@ -226,6 +210,7 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
         setGamesContainerSrc("/images/caret-right-fill.svg")
       }
     }
+    
     const toggleThread = () => { 
       setVisibleThread(!visibleThread); 
       if (threadSrc === "/images/caret-right-fill.svg") {
@@ -259,8 +244,6 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
         if (steamProfile && recentlyPlayed) {
           setLoading(false); 
           currentSteamNames[steamProfile.steamid] = steamProfile.personaname;
-          // setGameContainerHeight(gameContainerRef.current?.clientHeight);
-          // console.log(gameContainerHeight);
           setGameContainerReady(true);
           setVisibleGames(true);
           
@@ -273,19 +256,15 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
     }, [friend_id]); // Dependency array ensures the effect runs when friend_id changes
 
     useEffect(() => {
-      console.log("reload");
       if (gameContainerRef.current && gameContainerReady) {
           setGameContainerHeight(gameContainerRef.current?.clientHeight + 100);
-          console.log(gameContainerHeight);
       }
     }, [gameContainerReady, gameContainerRef, gameContainerHeight]);
 
     
     useEffect(() => {
-      console.log("reload");
       if (threadRef.current && threadReady) {
           setThreadHeight(threadRef.current?.clientHeight + 100);
-          console.log(gameContainerHeight);
       }
     }, [threadReady, threadRef, threadHeight]);
 
@@ -459,13 +438,6 @@ function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositio
                 })}
               </div>
             </>}
-            {/* <>
-              <h2>Your Thread:</h2>
-              <p>{friendProfile.personaname}</p>
-              {friend_chain && friend_chain.map((link) => {
-                <p>{allPositions[link[0]].calledFriend}</p>
-              })}
-            </> */}
             <br/>
           </div>
         )
@@ -666,9 +638,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       }
     }
   
-    const hideUI = () => {
-      setUI(false);
-    }
+    const hideUI = () => { setUI(false); }
   
     const setNewFocus = (newFocus : [number,number,number]) => {
       setCameraPos(newFocus);
@@ -678,23 +648,15 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       setVisibleProfile(false);
     }
   
-    // camera control buttons
-    const fourdegrees = () => {
+    // camera control buttons  
+    const moveCameraHorizontally = (deg: number) => {
       const sign = (horizontalCamera === "right")? 1 : -1;
-      cameraControlsRef.current?.rotate(45 * DEG2RAD * sign, 0, true); // This is a pretty cool spin animation
+      cameraControlsRef.current?.rotate(deg * DEG2RAD * sign, 0, true);
     }
-    const ninedegrees = () => {
-      const sign = (horizontalCamera === "right")? 1 : -1;
-      cameraControlsRef.current?.rotate(90 * DEG2RAD * sign, 0, true); // This is a pretty cool spin animation
-    }
-    const hundreddegrees = () => {
-      const sign = (horizontalCamera === "right")? 1 : -1;
-      cameraControlsRef.current?.rotate(180 * DEG2RAD * sign, 0, true); // This is a pretty cool spin animation
-    }
-  
-    const fourdegreesUp = () => {
+
+    const moveCameraVertically = (deg: number) => {
       const sign = (verticalCamera === "up")? -1 : 1;
-      cameraControlsRef.current?.rotate(0, 45 * DEG2RAD * (sign), true); // This is a pretty cool spin animation without the DEG2RAD
+      cameraControlsRef.current?.rotate(0, deg * DEG2RAD * (sign), true);
     }
   
     const zoomIn = () => { cameraControlsRef.current?.dolly(45, true); }
@@ -803,8 +765,6 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
               {displayedSteamId && 
               <>
               <div style={friendProfileBg} id='friend-container'>
-                {/* <div id='friend-container'>
-                </div> */}
                 <div id='star-bg'></div>
                 <button id='friend-close-btn' onClick={turnOff}>X</button>
                 <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} hideFriend={hideFriendProfile} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded} currentSteamNames = {steamNames}/>
@@ -858,9 +818,10 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                         <img fetchPriority='low' src="/images/arrow-right.svg" width={25} height={25} style={horizontalStyle} className='arrow cursor-pointer' alt={`Currently toggled to face ${horizontalCamera}`}></img>
                       </div>
                       <div id='horizontal-degrees'>
-                        <button onClick={fourdegrees}>45°</button>
-                        <button onClick={ninedegrees}>90°</button>
-                        <button onClick={hundreddegrees}>180°</button>
+                        {/* <button onClick={fourdegrees}>45°</button> */}
+                        <button onClick={() => moveCameraHorizontally(45)}>45°</button>
+                        <button onClick={() => moveCameraHorizontally(90)}>90°</button>
+                        <button onClick={() => moveCameraHorizontally(180)}>180°</button>
                       </div>
                     </div>
         
@@ -869,7 +830,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                           <img fetchPriority='low' src="/images/cameraBase.svg" width={50} height={50} className='base-camera cursor-pointer' alt='base camera image'></img>
                           <img fetchPriority='low' src="/images/arrow-up.svg" width={25} height={25} style={verticalStyle} className='arrow cursor-pointer' alt={`Currently toggled to face ${verticalCamera}`}></img>
                         </div>
-                        <button id='fortyfive-degrees' onClick={fourdegreesUp}>45°</button>
+                        <button id='fortyfive-degrees' onClick={() => moveCameraVertically(45)}>45°</button>
                     </div>
                     <div id='zoom-btns'>
                         <img fetchPriority='low' onClick={zoomIn} src='/images/zoom-in.svg' width={30} height={30} className='cursor-pointer' alt='Click to zoom in'></img>

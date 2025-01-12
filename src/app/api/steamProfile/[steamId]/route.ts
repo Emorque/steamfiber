@@ -1,18 +1,7 @@
 import { NextResponse } from 'next/server';
+import { validId } from '@/utils/helper';
 
 const steam_key = process.env.STEAM_WEB_API;
-
-function validId(steam_id: string) {
-    if (steam_id.length !== 17 && steam_id.length !== 16) {
-        return false
-    }
-    for (let i = 0; i < steam_id.length; i++){
-        if (!(steam_id[i] >= '0' && steam_id[i] <= '9' )){
-            return false
-        }
-    }
-    return true
-}
 
 export async function GET(request: Request, { params } : { params : {steamId: string}}) {
     const steam_id = params.steamId;    
