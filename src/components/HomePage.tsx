@@ -82,6 +82,10 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
       }, [formReady])
 
     function SteamIdMessage(id_message : string) {
+        if (idMessage) {
+            return;
+        }
+
         setIdMessage(id_message)
         if (id_message === "Steam ID Obtained") {
             setIdColor("rgb(81, 243, 108)");
@@ -193,44 +197,44 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         setDisabledButton(true);
 
         setTimeout(async () => {
-                friendsListProp(fList);
-                const friendsPos : FriendPositions = {}
+            friendsListProp(fList);
+            const friendsPos : FriendPositions = {}
 
-                if (localStorage.getItem(steamProfile.steamid) === null) {
-                    localStorage.setItem(steamProfile.personaname, steamProfile.steamid);
-                }
-                
-                const length = fList.friends.length
-                const max = Math.sqrt(2000 * length) / 2;
-    
-                {fList.friends.map((friend: Friend) => {
-                    const min = 1                
-                    const pos = {
-                        "x": getSign() * Math.random() * (max - min) + min,
-                        "y": getSign() * Math.random() * (max - min) + min,
-                        "z": Math.random() * 50 - 25,
-                        "timestamp": friend.friend_since,
-                        "calledFriend": steamProfile.personaname,
-                        "calledID": steamProfile.steamid
-                    }
-                    friendsPos[friend.steamid] = pos
-                });
-                friendsPos[steamProfile.steamid] = {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0,
-                    "timestamp": 0,
+            if (localStorage.getItem(steamProfile.steamid) === null) {
+                localStorage.setItem(steamProfile.personaname, steamProfile.steamid);
+            }
+            
+            const length = fList.friends.length
+            const max = Math.sqrt(2000 * length) / 2;
+
+            {fList.friends.map((friend: Friend) => {
+                const min = 1                
+                const pos = {
+                    "x": getSign() * Math.random() * (max - min) + min,
+                    "y": getSign() * Math.random() * (max - min) + min,
+                    "z": Math.random() * 50 - 25,
+                    "timestamp": friend.friend_since,
                     "calledFriend": steamProfile.personaname,
-                    "calledID": ""
+                    "calledID": steamProfile.steamid
                 }
-                friendsPositionProp(friendsPos);
-                }
-                const originalUser = {[steamProfile.steamid] : true}
-                friendsAddedProp(originalUser);
-                const newSteamNames : SteamNames = {
-                    [steamProfile.steamid] : steamProfile.personaname
-                }
-                steamNamesProps(newSteamNames);          
+                friendsPos[friend.steamid] = pos
+            });
+            friendsPos[steamProfile.steamid] = {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "timestamp": 0,
+                "calledFriend": steamProfile.personaname,
+                "calledID": ""
+            }
+            friendsPositionProp(friendsPos);
+            }
+            const originalUser = {[steamProfile.steamid] : true}
+            friendsAddedProp(originalUser);
+            const newSteamNames : SteamNames = {
+                [steamProfile.steamid] : steamProfile.personaname
+            }
+            steamNamesProps(newSteamNames);          
         }, 5000);
     }
     };

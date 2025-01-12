@@ -93,6 +93,8 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
   const [disabledRandom, setDisabledRandom] = useState<boolean>(false);
   const [showUI, setUI] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
+  
+  const [searchError, setSearchError] = useState<boolean>(false);
 
   // Next two functions are for updating both maps FriendList and FriendPos with friend's friendList data
   const handleNewFriendsList = (newFriends : FriendList | null) => {
@@ -160,7 +162,14 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         setBgColor(getProfileHSL(info.x, info.y));
         setCameraPos([position.x, position.y, position.z]);
       } else {
-        alert('Friend Id not Found');
+        // alert('Friend Id not Found');
+        if (searchError) {
+          return;
+        }
+        setSearchError(true);
+        setTimeout(() => {
+          setSearchError(false)
+        }, 2000);
       }
     }
   };
@@ -190,7 +199,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
 
       setTimeout(() => {
         setDisabledRandom(false);
-      }, 1000)
+      }, 2000)
     }
 
   }
@@ -302,6 +311,15 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     transition: "max-height 0.5s ease",
   }
 
+  const searchStyle = {
+    display: searchError? "block" : "none",
+  }
+
+  const inputStyle = {
+    backgroundColor: searchError ? "rgb(243, 81, 81)" : "white",
+    transition: "all 1s ease"
+  }
+
   if (friendsList && steamProfile && friendsPos) {
     const friendProfileBg = {
       background: `linear-gradient(#0B1829 0%, #0B1829 34%,${profileBgColor} 100%)`,
@@ -344,6 +362,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
               <input
                   type="text"
                   value={search}
+                  style={inputStyle}
                   name="input-search-steamID"
                   onChange={(e) => setSearch(e.target.value)}
               />
@@ -355,6 +374,11 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
             <button className="database-btn" onClick={toggleDatabase}>
               <img src="/images/database.svg" width={15} height={15} alt='button for toggling list of steam names previously seen'></img>
             </button>
+
+            <div id='searchError' style={searchStyle}>
+              <p>User not found</p>
+            </div>
+
             <div id='prev-users-wrapper' style={prevUsersStyle}>
               <div id='previous-users'>
                 {Object.values(steamNames).map((value) => {

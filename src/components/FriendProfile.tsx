@@ -46,14 +46,29 @@ export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, all
     const [threadReady, setThreadReady] = useState<boolean>(false);
     const [visibleThread, setVisibleThread] = useState<boolean>(true);
     const [threadSrc, setThreadSrc] = useState<string>("/images/caret-down-fill.svg")
+
+    const [visibleClipboard, setVisibleClipboard] = useState<boolean>(false);
+    const [clipboardText, setClipboardText] = useState<string | null>("");
   
     const errorStyle = {
       opacity: error? 1 : 0,
       transform: error? "translate(10px,15px)" : "translate(10px,0px)",
       transition: "all 0.25s linear",
+      padding: error? 5 : 0,
+    }
+
+    const clipboardStyle = {
+      opacity: visibleClipboard? 1 : 0,
+      textContent: "Copied ID",
+      transform: visibleClipboard? "translate(0px,10px)" : "translate(0px,0px)",
+      transition: "all 0.25s linear",
+      padding: visibleClipboard? 5 : 0,
     }
   
     const errorFunc = (err: string) => {
+      if (error) {
+        return;
+      }
       setError(err)
       setTimeout(() => {
         setError(null)
@@ -173,6 +188,15 @@ export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, all
   
         const copyToClipboard = () => {
           navigator.clipboard.writeText(friend_id);
+          if (visibleClipboard) {
+            return;
+          }
+          setVisibleClipboard(true);
+          setClipboardText("Copied ID");
+          setTimeout(() => {
+            setVisibleClipboard(false)
+            setClipboardText(null);
+          }, 2000);
         }
   
         const addFriends = async () => {
@@ -230,8 +254,15 @@ export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, all
                 <h4>{stateStyle[friendProfile.personastate]}</h4>
                 <div id='copy-focus'>
                   <img src="/images/focus.svg" height={30} width={30} onClick={() => setNewFocus(friend_id)} className='cursor-pointer' fetchPriority='low' alt={`Click to focus on ${friendProfile.personaname}`}></img>
-                  <img src="/images/copy.svg" height={30} width={30} onClick={() => copyToClipboard()} className='cursor-pointer' fetchPriority='low' alt={`Click to copy ${friendProfile.personaname}'s Steam id`}></img>
+                  <div style={{position: "relative", zIndex:"10"}}>
+                    <img src="/images/copy.svg" height={30} width={30} onClick={() => copyToClipboard()} className='cursor-pointer' fetchPriority='low' alt={`Click to copy ${friendProfile.personaname}'s Steam id`}></img>
+                    <p id='clipboardText' style={clipboardStyle}>{clipboardText}</p>
+                  </div>
                   <img fetchPriority='low' src='/images/hide.svg' width={30} height={30} onClick={() => hideProfile()} className='cursor-pointer' alt='Click to hide Friend Profile' id='friend-hide-btn'></img>
+                
+                  {/* <div id="clipboardText" style={clipboardStyle}>
+                    <p>Copied ID</p>
+                  </div> */}
                 </div>
               </div>
             </div>
