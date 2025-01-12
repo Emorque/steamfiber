@@ -8,6 +8,8 @@ import { HpParticle } from "./HpParticle";
 
 import "./homepage.css";
 
+import { getSign, validId } from "@/utils/helper";
+
 interface HomePageProps {
     steamProfileProp : (userProfile: SteamProfile | null ) => void;
     friendsListProp : (friends : FriendList | null) => void;
@@ -16,23 +18,8 @@ interface HomePageProps {
     steamNamesProps : (newSteamNames : SteamNames | null) => void;
 }
 
-function getSign() : number {
-    return Math.random() < 0.5 ? 1: -1
-}
-
-function validId(steam_id: string) {
-    if (steam_id.length !== 17 && steam_id.length !== 16) {
-        return false
-    }
-    for (let i = 0; i < steam_id.length; i++){
-        if (!(steam_id[i] >= '0' && steam_id[i] <= '9' )){
-            return false
-        }
-    }
-    return true
-}
-
 export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : HomePageProps) {
+    // States that get set by user's input
     const [steamId, setSteamId] = useState<string>('');
 
     // States for styling
@@ -40,31 +27,27 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const [infoComponent, setInfoComponent] = useState<boolean>(false);
     const [databaseComponent, setDatabaseComponent] = useState<boolean>(false);
     const [signInComponennt, setSignInComponent] = useState<boolean>(false);
-
-
     const [disabledButton, setDisabledButton] = useState<boolean>(false);
 
     const [idMessage, setIdMessage] = useState< string | null >(null);
     const [idColor, setIdColor] = useState<string>("white");
-
     const [animation, startAnimation] = useState<boolean>(false);
 
+    // States for local storage and already checked Ids
     const [localIds, setLocalIds] = useState<string[][]>([]);
-
     const [checkedIds] = useState<IdSubmissions>(new Set<string>());
 
+    // Needed for form submit to be called more than once
     const [formReady, setFormReady] = useState<boolean>(false);
-
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(()=> {
         const tempLocalIds : string[][]= []
         
-        // const localIds: string[][] = []
         // Getting the used ids from local storage
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i); // Get the key at index i
-            if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {
+            if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {  // keys to be ignored
             const value = localStorage.getItem(key); // Get the value associated with that key
             if (value) {
                 tempLocalIds.push([key, value]);
@@ -89,7 +72,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         const user = atob(data)
         // quotation marks are in user so those need to be taken out before setting steamId
         setSteamId(user.substring(1,user.length - 1))
-        // SteamIdMessage("Steam ID Obtained");
         setFormReady(true);
       }, [])
 
@@ -100,6 +82,10 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
       }, [formReady])
 
     function SteamIdMessage(id_message : string) {
+        if (idMessage) {
+            return;
+        }
+
         setIdMessage(id_message)
         if (id_message === "Steam ID Obtained") {
             setIdColor("rgb(81, 243, 108)");
@@ -158,7 +144,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
 
     const messageTextStyle = {
         color : idColor,
-        // transition: 'all 2s linear'
     }
 
     const databaseStyle = {
@@ -212,44 +197,44 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         setDisabledButton(true);
 
         setTimeout(async () => {
-                friendsListProp(fList);
-                const friendsPos : FriendPositions = {}
+            friendsListProp(fList);
+            const friendsPos : FriendPositions = {}
 
-                if (localStorage.getItem(steamProfile.steamid) === null) {
-                    localStorage.setItem(steamProfile.personaname, steamProfile.steamid);
-                }
-                
-                const length = fList.friends.length
-                const max = Math.sqrt(2000 * length) / 2;
-    
-                {fList.friends.map((friend: Friend) => {
-                    const min = 1                
-                    const pos = {
-                        "x": getSign() * Math.random() * (max - min) + min,
-                        "y": getSign() * Math.random() * (max - min) + min,
-                        "z": Math.random() * 50 - 25,
-                        "timestamp": friend.friend_since,
-                        "calledFriend": steamProfile.personaname,
-                        "calledID": steamProfile.steamid
-                    }
-                    friendsPos[friend.steamid] = pos
-                });
-                friendsPos[steamProfile.steamid] = {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0,
-                    "timestamp": 0,
+            if (localStorage.getItem(steamProfile.steamid) === null) {
+                localStorage.setItem(steamProfile.personaname, steamProfile.steamid);
+            }
+            
+            const length = fList.friends.length
+            const max = Math.sqrt(2000 * length) / 2;
+
+            {fList.friends.map((friend: Friend) => {
+                const min = 1                
+                const pos = {
+                    "x": getSign() * Math.random() * (max - min) + min,
+                    "y": getSign() * Math.random() * (max - min) + min,
+                    "z": Math.random() * 50 - 25,
+                    "timestamp": friend.friend_since,
                     "calledFriend": steamProfile.personaname,
-                    "calledID": ""
+                    "calledID": steamProfile.steamid
                 }
-                friendsPositionProp(friendsPos);
-                }
-                const originalUser = {[steamProfile.steamid] : true}
-                friendsAddedProp(originalUser);
-                const newSteamNames : SteamNames = {
-                    [steamProfile.steamid] : steamProfile.personaname
-                }
-                steamNamesProps(newSteamNames);          
+                friendsPos[friend.steamid] = pos
+            });
+            friendsPos[steamProfile.steamid] = {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "timestamp": 0,
+                "calledFriend": steamProfile.personaname,
+                "calledID": ""
+            }
+            friendsPositionProp(friendsPos);
+            }
+            const originalUser = {[steamProfile.steamid] : true}
+            friendsAddedProp(originalUser);
+            const newSteamNames : SteamNames = {
+                [steamProfile.steamid] : steamProfile.personaname
+            }
+            steamNamesProps(newSteamNames);          
         }, 5000);
     }
     };

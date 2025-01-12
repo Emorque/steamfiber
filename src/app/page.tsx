@@ -14,13 +14,10 @@ export default function Home() {
   const [friendsList, setFriendsList] = useState<FriendList | null>(null);
   const [friendsPositions, setFriendsPositions] = useState<FriendPositions | null>(null);
   const [friendsAdded, setFriendsAdded] = useState<FriendsAdded | null>(null);
-
   const [currentSteamNames, setSteamNames] = useState<SteamNames | null>(null)
 
   // Accompanying function handles to communicate with the HomePage component:
-  const handleSteamProfile = (userProfile : SteamProfile | null) => {
-    setSteamProfile(userProfile);
-  }
+  const handleSteamProfile = (userProfile : SteamProfile | null) => { setSteamProfile(userProfile); }
 
   const handleFriendsList = (friends : FriendList | null) => { setFriendsList(friends) }
 
