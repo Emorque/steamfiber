@@ -19,6 +19,7 @@ interface HomePageProps {
 }
 
 export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : HomePageProps) {
+    // States that get set by user's input
     const [steamId, setSteamId] = useState<string>('');
 
     // States for styling
@@ -26,31 +27,27 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const [infoComponent, setInfoComponent] = useState<boolean>(false);
     const [databaseComponent, setDatabaseComponent] = useState<boolean>(false);
     const [signInComponennt, setSignInComponent] = useState<boolean>(false);
-
-
     const [disabledButton, setDisabledButton] = useState<boolean>(false);
 
     const [idMessage, setIdMessage] = useState< string | null >(null);
     const [idColor, setIdColor] = useState<string>("white");
-
     const [animation, startAnimation] = useState<boolean>(false);
 
+    // States for local storage and already checked Ids
     const [localIds, setLocalIds] = useState<string[][]>([]);
-
     const [checkedIds] = useState<IdSubmissions>(new Set<string>());
 
+    // Needed for form submit to be called more than once
     const [formReady, setFormReady] = useState<boolean>(false);
-
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(()=> {
         const tempLocalIds : string[][]= []
         
-        // const localIds: string[][] = []
         // Getting the used ids from local storage
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i); // Get the key at index i
-            if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {
+            if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {  // keys to be ignored
             const value = localStorage.getItem(key); // Get the value associated with that key
             if (value) {
                 tempLocalIds.push([key, value]);
@@ -75,7 +72,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         const user = atob(data)
         // quotation marks are in user so those need to be taken out before setting steamId
         setSteamId(user.substring(1,user.length - 1))
-        // SteamIdMessage("Steam ID Obtained");
         setFormReady(true);
       }, [])
 
@@ -144,7 +140,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
 
     const messageTextStyle = {
         color : idColor,
-        // transition: 'all 2s linear'
     }
 
     const databaseStyle = {

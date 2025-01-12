@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-// import { PostHogProvider } from './providers'
-
 import { PostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
