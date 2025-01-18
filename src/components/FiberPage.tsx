@@ -96,6 +96,29 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
   
   const [searchError, setSearchError] = useState<boolean>(false);
 
+  // Tab click to toggle UI
+  useEffect(() => {
+    const handleKeyClick = (event : {key : string}) => {
+      if (event.key === "Shift") {
+        console.log("UI", showUI);
+        console.log("Profile", visibleProfile);
+        if (showUI || visibleProfile) {
+          setUI(false);
+          setVisibleProfile(false);
+        }
+        else{
+          setUI(true);
+          setVisibleProfile(true);
+        }
+      }
+    }
+    document.addEventListener('keydown', handleKeyClick);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyClick);
+    }
+  }, [showUI, visibleProfile])
+
   // Next two functions are for updating both maps FriendList and FriendPos with friend's friendList data
   const handleNewFriendsList = (newFriends : FriendList | null) => {
       if (newFriends && friendsPos && friendsList) {
@@ -432,7 +455,10 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
                   <img fetchPriority='low' src={freeRoamIcon} width={25} height={25} className='arrow cursor-pointer' alt={`Currently toggled to ${freeRoam} on click`}></img>
                 </div>
               </div>
-              <img fetchPriority='low' onClick={hideUI} src='/images/hide.svg' width={50} height={50} className='cursor-pointer' alt='Click to hide UI'></img>
+              <div className='hideMessageDiv'>
+                <img fetchPriority='low' onClick={hideUI} src='/images/hide.svg' width={50} height={50} className='cursor-pointer hideMessageImg' alt='Click to hide UI'></img>
+                <p className=' hideMessage'> Shift To Toggle</p>
+              </div>
             </div>
           </div>
         </>

@@ -37,7 +37,7 @@ export async function GET(request: Request, { params } : { params : {steamId: st
                 // public: This response is allowed to be cached by anything
                 // max-age=3600: The response is considered "fresh" for 3600 seconds (1 hour), after which it's considered "stale"
                 // stale-while-revalidate=60: After the data is considered stale, it's allowed to serve stale content for an additional 60 seconds while it fetches fresh content in the bg
-                'Cache-Control': 'public, max-age=86400, stale-while-revalidate=60'
+                'Cache-Control': 'public, max-age=3600, stale-while-revalidate=60'
               },
             }
           )

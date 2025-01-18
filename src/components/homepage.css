@@ -145,7 +145,7 @@
     background-color: #000000e0;
     max-width: 400px;
     height: 50%;
-    max-height: 420px;
+    max-height: 350px;
     border-radius: 5px;
 }
 
@@ -154,7 +154,7 @@
     background-color: #000000e0;
     max-width: 400px;
     height: 50%;
-    max-height: 350px;
+    max-height: 300px;
     border-radius: 5px;
 }
 
@@ -303,4 +303,13 @@ input[type="submit"] {
     background-color: black;
     width: fit-content;
     height: fit-content;
+}
+
+@media (min-height: 600px) {
+    #signIn-wrapper {
+        max-height: 350px;
+    }
+    #help-wrapper {
+        max-height: 320px;
+    }
 }
