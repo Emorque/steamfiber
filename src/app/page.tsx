@@ -27,9 +27,9 @@ export default function Home() {
 
   const handleSteamNames = (newSteamNames : SteamNames | null) => { setSteamNames(newSteamNames) }
   
-  if (steamProfile && friendsList && friendsPositions && friendsAdded && currentSteamNames) {
+  if (steamProfile && friendsPositions && friendsAdded && currentSteamNames) {
     return (
-      <FiberPage steamProfileProp={steamProfile} friendsListProp = {friendsList} friendsPositionProp = {friendsPositions} friendsAddedProp = {friendsAdded} steamNamesProps = {currentSteamNames}/>
+      <FiberPage steamProfileProp={steamProfile} friendsPositionProp = {friendsPositions} friendsAddedProp = {friendsAdded} steamNamesProps = {currentSteamNames}/>
     )
   }
   else {

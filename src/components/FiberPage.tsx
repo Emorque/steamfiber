@@ -59,16 +59,16 @@ const getProfileHSL = (x: number, y: number) => {
   
 interface FiberPageProps {
     steamProfileProp : SteamProfile;
-    friendsListProp : FriendList;
+    // friendsListProp : FriendList;
     friendsPositionProp : FriendPositions;
     friendsAddedProp : FriendsAdded;
     steamNamesProps: SteamNames;
 }
 
-export function FiberPage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : FiberPageProps) {
+export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : FiberPageProps) {
   // Structures passed to fiberPage from homePage
   const [steamProfile] = useState<SteamProfile>(steamProfileProp);
-  const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
+  // const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
   const [friendsPos, setFriendsPos] = useState<FriendPositions | null>(friendsPositionProp);
   const friendsAdded = friendsAddedProp;
   const steamNames = steamNamesProps;
@@ -102,6 +102,10 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
       if (event.key === "Shift") {
         console.log("UI", showUI);
         console.log("Profile", visibleProfile);
+        console.log("steamProfile", steamProfile);
+        console.log("friendsPos", friendsPos);
+        console.log("friendsAdded", friendsAdded);
+        console.log("steamNames", steamNames);
         if (showUI || visibleProfile) {
           setUI(false);
           setVisibleProfile(false);
@@ -117,20 +121,20 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     return () => {
       document.removeEventListener('keydown', handleKeyClick);
     }
-  }, [showUI, visibleProfile])
+  }, [showUI, visibleProfile, steamProfile, friendsPos, friendsAdded, steamNames])
 
   // Next two functions are for updating both maps FriendList and FriendPos with friend's friendList data
-  const handleNewFriendsList = (newFriends : FriendList | null) => {
-      if (newFriends && friendsPos && friendsList) {
-        const friendListClone = {... friendsList} // Deep copy
-        newFriends.friends.map((friend) => {
-        if (!(friend.steamid in friendsPos || friend.steamid === steamProfile?.steamid) ) {
-            friendListClone.friends.push(friend); 
-        }
-        })
-        setFriendsList(friendListClone);
-      }
-  }
+  // const handleNewFriendsList = (newFriends : FriendList | null) => {
+  //     if (newFriends && friendsPos && friendsList) {
+  //       const friendListClone = {... friendsList} // Deep copy
+  //       newFriends.friends.map((friend) => {
+  //       if (!(friend.steamid in friendsPos || friend.steamid === steamProfile?.steamid) ) {
+  //           friendListClone.friends.push(friend); 
+  //       }
+  //       })
+  //       setFriendsList(friendListClone);
+  //     }
+  // }
 
   const handleNewFriendsPosition = (newFriendsPos : FriendPositions | null) => {
     if (newFriendsPos && friendsPos) {
@@ -343,7 +347,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
     transition: "all 1s ease"
   }
 
-  if (friendsList && steamProfile && friendsPos) {
+  if (steamProfile && friendsPos) {
     const friendProfileBg = {
       background: `linear-gradient(#0B1829 0%, #0B1829 34%,${profileBgColor} 100%)`,
       display: visibleProfile? "block": "none",
@@ -361,11 +365,23 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
           
           <CustomCameraControls particlePos={cameraPos} cameraRef={cameraControlsRef}/>
 
-          {friendsList.friends.map((friend) => {
+          {/* {friendsList.friends.map((friend) => {
             return (
               <Particle position={friendsPos[friend.steamid]} key={friend.steamid} id={friend.steamid} currentSteamNames = {steamNames} clicked={handleClick}/>
             )
-          })}
+          })} */}
+          {
+            Object.keys(friendsPos).map(key => {
+              return (
+                <Particle position={friendsPos[key]} key={key} id={key} currentSteamNames = {steamNames} clicked={handleClick}/>
+              )
+            })
+          }
+          {/* {friendsList.friends.map((friend) => {
+            return (
+              <Particle position={friendsPos[friend.steamid]} key={friend.steamid} id={friend.steamid} currentSteamNames = {steamNames} clicked={handleClick}/>
+            )
+          })} */}
           {displayedSteamId && <Tube po={displayedSteamId} allPositions = {friendsPos}/>}
         </Canvas>
 
@@ -374,7 +390,7 @@ export function FiberPage({steamProfileProp, friendsListProp, friendsPositionPro
         <div style={friendProfileBg} id='friend-container'>
           <div id='star-bg'></div>
           <button id='friend-close-btn' onClick={turnOff}>X</button>
-          <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} hideFriend={hideFriendProfile} allPositions = {friendsPos} friendsListProp ={handleNewFriendsList} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded} currentSteamNames = {steamNames}/>
+          <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} hideFriend={hideFriendProfile} allPositions = {friendsPos} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded} currentSteamNames = {steamNames}/>
         </div>
         </>
         }

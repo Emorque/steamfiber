@@ -19,18 +19,19 @@ interface FriendProps {
     setFocus : (currParticlePos : [number,number,number]) => void;
     hideFriend: (setHide : boolean) => void;
     allPositions: FriendPositions;
-    friendsListProp: (newFriends : FriendList | null) => void;
+    // friendsListProp: (newFriends : FriendList | null) => void;
     friendsPositionProp: (newFriendsPos : FriendPositions | null) => void;
     friendsAddedProp: FriendsAdded;
     currentSteamNames : SteamNames;
   }
 
-export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositions, friendsListProp, friendsPositionProp, friendsAddedProp, currentSteamNames}  : FriendProps ) {
+export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, allPositions, friendsPositionProp, friendsAddedProp, currentSteamNames}  : FriendProps ) {
 
     const [friendProfile, setFriendProfile] = useState< SteamProfile | null>(null);
     const [recentGames, setRecentGames] = useState< RecentlyPlayed | null>(null);
     const [error, setError] = useState< string | null >(null);
-  
+    const [dataReady, setDataReady] = useState(false);
+
     const [loading, setLoading] = useState<boolean>(false);
     const [chainHeight, setChainHeight] = useState<number>(0);
   
@@ -86,9 +87,14 @@ export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, all
     let next_id;
   
     while (current_id !== "") {
-      next_id = allPositions[current_id].calledID;
-      friend_chain.push(current_id);
-      current_id = next_id;
+      if (allPositions[current_id]) {
+        next_id = allPositions[current_id].calledID;
+        friend_chain.push(current_id);
+        current_id = next_id;
+      }
+      else {
+        break;
+      }
     }
     friend_chain.pop();
   
@@ -135,21 +141,24 @@ export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, all
   
         setFriendProfile(steamProfile); 
         setRecentGames(recentlyPlayed); 
-  
-        if (steamProfile && recentlyPlayed) {
-          setLoading(false); 
-          currentSteamNames[steamProfile.steamid] = steamProfile.personaname;
-          setGameContainerReady(true);
-          setVisibleGames(true);
-          
-          setThreadReady(true);
-          setVisibleThread(true);
-        }
       };
     
       fetchData(); // Call the async function
     }, [friend_id]); // Dependency array ensures the effect runs when friend_id changes
   
+
+    useEffect(() => {
+      if (friendProfile && recentGames) {
+        setLoading(false); 
+        currentSteamNames[friendProfile.steamid] = friendProfile.personaname;
+        setGameContainerReady(true);
+        setVisibleGames(true);
+        
+        setThreadReady(true);
+        setVisibleThread(true);
+      }
+    }, [friendProfile, recentGames])
+
     useEffect(() => {
       if (gameContainerRef.current && gameContainerReady) {
           setGameContainerHeight(gameContainerRef.current?.clientHeight + 100);
@@ -215,7 +224,7 @@ export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, all
             const currParticlePos = allPositions[friend_id]
             const forward = currParticlePos.z > 0 ? 1 : -1;
   
-            friendsListProp(friendsFriendList);
+            // friendsListProp(friendsFriendList);
             const newFriendsPos : FriendPositions = {}
   
             const length = friendsFriendList.friends.length
