@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FriendList, FriendPositions, FriendsAdded, RecentlyPlayed, SteamNames, SteamProfile } from "./types";
+import { FriendPositions, FriendsAdded, RecentlyPlayed, SteamNames, SteamProfile } from "./types";
 import { getFriendsList, getRecentGames, getSteamProfile } from "./steamapi";
 import { getSign } from "@/utils/helper";
 
@@ -30,7 +30,6 @@ export function FriendProfie({friend_id, friend_since, setFocus, hideFriend, all
     const [friendProfile, setFriendProfile] = useState< SteamProfile | null>(null);
     const [recentGames, setRecentGames] = useState< RecentlyPlayed | null>(null);
     const [error, setError] = useState< string | null >(null);
-    const [dataReady, setDataReady] = useState(false);
 
     const [loading, setLoading] = useState<boolean>(false);
     const [chainHeight, setChainHeight] = useState<number>(0);

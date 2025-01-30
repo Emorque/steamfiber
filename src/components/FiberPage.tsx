@@ -1,6 +1,6 @@
 // 76561198066405189  - Person with 2000 Friends
 
-import { FriendList, SteamProfile, FriendPositions, FriendsAdded, SteamNames } from '@/components/types'; // Getting types
+import { SteamProfile, FriendPositions, FriendsAdded, SteamNames } from '@/components/types'; // Getting types
 import { Canvas } from '@react-three/fiber'
 import { CameraControls } from '@react-three/drei';
 import { useState, useRef, useEffect } from "react";

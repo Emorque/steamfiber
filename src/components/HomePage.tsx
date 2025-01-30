@@ -12,13 +12,12 @@ import { getSign, validId } from "@/utils/helper";
 
 interface HomePageProps {
     steamProfileProp : (userProfile: SteamProfile | null ) => void;
-    friendsListProp : (friends : FriendList | null) => void;
     friendsPositionProp : (friendsPos : FriendPositions | null) => void;
     friendsAddedProp : (originalUser : FriendsAdded | null) => void;
     steamNamesProps : (newSteamNames : SteamNames | null) => void;
 }
 
-export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : HomePageProps) {
+export function HomePage({steamProfileProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : HomePageProps) {
     // States that get set by user's input
     const [steamId, setSteamId] = useState<string>('');
 
@@ -197,7 +196,6 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         setDisabledButton(true);
 
         setTimeout(async () => {
-            friendsListProp(fList);
             const friendsPos : FriendPositions = {}
 
             if (localStorage.getItem(steamProfile.steamid) === null) {

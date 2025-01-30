@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useEffect, useState} from 'react'
-import { FriendList, SteamProfile, FriendPositions, FriendsAdded, SteamNames } from '@/components/types';
+import { SteamProfile, FriendPositions, FriendsAdded, SteamNames } from '@/components/types';
 import { FiberPage } from '@/components/FiberPage';
 import { createClient } from '@/utils/supabase/client'
 
@@ -34,7 +34,7 @@ export default function Countries({params} : {params : Promise<{mapurl : string}
         setFriendsAdded(customMap.addedNames);
         setSteamNames(customMap.steamNames);
       }
-    } catch (error) {
+    } catch {
       alert("Error loading custom map");
     } finally {
       setLoading(false)
