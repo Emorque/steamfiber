@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { FriendList, Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions, SteamNames } from '@/components/types'; // Getting types
+import { Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions, SteamNames } from '@/components/types'; // Getting types
 import { getSteamProfile, getFriendsList } from "./steamapi";
 
 import { Canvas } from '@react-three/fiber'
