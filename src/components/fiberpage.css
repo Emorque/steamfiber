@@ -430,6 +430,13 @@ input[type="text"] {
     width: 100px;
 }
 
+#fiberpage-search {
+    color: black;
+    border: solid 1px #8f8f8f;
+    padding: 1px 6px;
+    width: 75px;
+}
+
 #error-text {
     position: absolute;
     left: -10px;
@@ -597,6 +604,9 @@ p, #add-friends-btn, .thread-btn {
     input[type="text"] {
         width: 120px;
     } 
+    #fiberpage-search {
+        width: 100px;
+    }
     #previous-users {
         max-width: 175px;
     }
@@ -607,6 +617,9 @@ p, #add-friends-btn, .thread-btn {
     input[type="text"] {
         width: 155px;
     } 
+    #fiberpage-search {
+        width: 135px;
+    }
     #previous-users {
         max-width: 210px;
     }

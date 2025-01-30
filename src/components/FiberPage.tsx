@@ -310,8 +310,8 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   const getLink = () => {
     if (linkLoading || linkError) return;
     setLinkLoading(true);
-    let currentTime = Date.now()
-    let oneHourInMilliseconds = 3600000; // 1 hour = 3600 * 1000 milliseconds
+    const currentTime = Date.now()
+    const oneHourInMilliseconds = 3600000; // 1 hour = 3600 * 1000 milliseconds
     const lastUpload = localStorage.getItem("lastUpload")
     if (lastUpload) {
       const timeDifference = currentTime - parseInt(lastUpload);
@@ -517,6 +517,7 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
             <form id='search-container' onSubmit={handleSubmit}>
               <input
                   type="text"
+                  id="fiberpage-search"
                   value={search}
                   style={inputStyle}
                   name="input-search-steamID"
