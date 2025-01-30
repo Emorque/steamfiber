@@ -4,6 +4,7 @@ import { SteamProfile, FriendPositions, FriendsAdded, SteamNames } from '@/compo
 import { Canvas } from '@react-three/fiber'
 import { CameraControls } from '@react-three/drei';
 import { useState, useRef, useEffect } from "react";
+import { createClient } from '@/utils/supabase/client'
 
 import { Particle } from './Particle';
 import { FriendProfie } from './FriendProfile';
@@ -73,6 +74,14 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   const friendsAdded = friendsAddedProp;
   const steamNames = steamNamesProps;
 
+  // Supabase client
+  const supabase = createClient();
+  const [currentLink, setLink] = useState<string | null>(null)
+  const [linkError, setLinkError] = useState<string | null>();
+  const [linkLoading, setLinkLoading] = useState<boolean>(false);
+  // To limit their writes to about 5 a day, I'll use this state.
+  // If more writes/reads are made to SteamFiber, I'll add an auth requirement for writes
+
   const [displayedSteamId, setDisplayedSteamId] = useState<ParticleInfo | null>(null);
 
   // States for handling camera
@@ -87,6 +96,7 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   const [profileBgColor, setBgColor] = useState<string>("#0B1829");
   const [freeRoamIcon, setFreeRoamIcon] = useState<string>("/images/arrow-repeat.svg");
   const [visibleDatabase, setVisibleDatabase] = useState<boolean>(false);
+  const [shareState, setShare] = useState<boolean>(false);
   const [visibleProfile, setVisibleProfile] = useState<boolean>(true);
 
   // Misc States
@@ -100,12 +110,12 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   useEffect(() => {
     const handleKeyClick = (event : {key : string}) => {
       if (event.key === "Shift") {
-        console.log("UI", showUI);
-        console.log("Profile", visibleProfile);
-        console.log("steamProfile", steamProfile);
-        console.log("friendsPos", friendsPos);
-        console.log("friendsAdded", friendsAdded);
-        console.log("steamNames", steamNames);
+        // console.log("UI", showUI);
+        // console.log("Profile", visibleProfile);
+        // console.log("steamProfile", steamProfile);
+        // console.log("friendsPos", friendsPos);
+        // console.log("friendsAdded", friendsAdded);
+        // console.log("steamNames", steamNames);
         if (showUI || visibleProfile) {
           setUI(false);
           setVisibleProfile(false);
@@ -294,6 +304,71 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   }
 
   const toggleDatabase = () => { setVisibleDatabase(!visibleDatabase); }
+  const showShare = () => { setShare(true) }
+  const closeShare = () => { setShare(false) }
+
+  const getLink = () => {
+    if (linkLoading || linkError) return;
+    setLinkLoading(true);
+    let currentTime = Date.now()
+    let oneHourInMilliseconds = 3600000; // 1 hour = 3600 * 1000 milliseconds
+    const lastUpload = localStorage.getItem("lastUpload")
+    if (lastUpload) {
+      const timeDifference = currentTime - parseInt(lastUpload);
+      if (timeDifference > oneHourInMilliseconds){
+        generateLink();
+      }
+      else {
+        setLinkError(`You can generate a link in ${(60 - (timeDifference / 60000)).toFixed(0)} mins`)
+        setLinkLoading(false);
+        setTimeout(() => {
+          setLinkError("");
+        }, 2000);
+      }
+    }
+    else {
+      localStorage.setItem("lastUpload", currentTime.toString())
+      generateLink();
+    }
+  }
+
+  const generateLink = async () => {
+    try {
+      const { data : customMap, error, status } = await supabase
+      .from('customMaps')
+      .insert([
+        { 'steamProfile': steamProfile, 'friendsPositions': friendsPos, 'steamNames': steamNames, 'addedNames': friendsAdded},
+      ])
+      .select('link')
+      .single()
+  
+      if (error && status !== 406) {
+        setLinkError("Unable to Generate Link")
+        setLinkLoading(false);
+        setTimeout(() => {
+          setLinkError("");
+        }, 2000);
+      }
+
+      if (customMap) {
+        setLink(`steamfiber.com/custom/${customMap.link}`)
+        setLinkLoading(false);
+        localStorage.setItem("lastUpload", Date.now().toString())
+      }
+    }
+    catch {
+      setLinkError("Unable to Generate Link")
+      setLinkLoading(false);
+      setTimeout(() => {
+        setLinkError("");
+      }, 2000);
+    }
+  }
+
+  const copyLink = () => {
+    if (currentLink) navigator.clipboard.writeText(currentLink);
+  }
+
 
   const toggleVerticalCamera = () => {
     if (verticalCamera === "up") {
@@ -334,6 +409,7 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   }
 
   const prevUsersStyle = {
+    padding: 5,
     maxHeight: visibleDatabase? Math.min(125, 25 * Object.keys(steamNames).length): 0,
     transition: "max-height 0.5s ease",
   }
@@ -342,8 +418,20 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
     display: searchError? "block" : "none",
   }
 
+  const pageStyle = {
+    opacity: shareState? 0.6: 1
+  }
+
+  const linkErrorStyle = {
+    position: "absolute" as const, 
+    color: linkError ? "rgb(243, 81, 81)" : "#eaeaea",
+    zIndex: 0,
+    transform: linkError ? "translate(0px, 30px)" : "translate(0px, 15px)",
+    transition: 'all 0.25s linear'
+};
+
   const inputStyle = {
-    backgroundColor: searchError ? "rgb(243, 81, 81)" : "white",
+    backgroundColor: searchError ? "rgb(243, 81, 81)" : "#eaeaea",
     transition: "all 1s ease"
   }
 
@@ -354,7 +442,36 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
     }
 
     return (
-      <div id='fiberpage-container'>
+      <>
+      {shareState &&
+        <>
+          <div id='share-wrapper'>
+            <div id='share-container'>
+              <h2 style={{marginTop: 4, marginLeft: 4}}>Share Map</h2>
+              <button id='friend-close-btn' onClick={closeShare}>X</button>
+              <div style={{display: 'flex', flexDirection: 'column', gap: 25, margin: 15, marginTop: 20, alignItems: 'center'}}>
+                <button style={{zIndex: 10}} className='shareBtns' onClick={getLink}>
+                  {linkLoading? (
+                    <>
+                      Loading 
+                      <span className='loading-dot'>.</span>
+                      <span className='loading-dot'>.</span>
+                      <span className='loading-dot'>.</span>
+                    </>
+                  ): (
+                    "Generate Link"
+                  )}
+
+                </button>
+                <p style={linkErrorStyle}>{linkError}</p>
+                {currentLink && <button className='shareBtns' onClick={copyLink}>Copy Link</button>}
+              </div>
+              
+            </div>                      
+          </div>
+        </>
+      }
+      <div id='fiberpage-container' style={pageStyle}>
         <Canvas camera={{near: 1, far:1500} }> {/* far: 1000 seems to be when objects clip at the furthest distance*/}
           {/* This is the user's particle */}
           <Particle position={{"x": 0,"y": 0,"z": 0,"timestamp": 0,"calledID": ""}} key={steamProfile.steamid} id={steamProfile.steamid} currentSteamNames={steamNames} clicked={handleClick}/>
@@ -412,6 +529,9 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
             </form>
             <button className="database-btn" onClick={toggleDatabase}>
               <img src="/images/database.svg" width={15} height={15} alt='button for toggling list of steam names previously seen'></img>
+            </button>
+            <button className="database-btn share-btn" onClick={showShare}>
+              <img src="/images/share.svg" width={15} height={15} alt='button for toggling list of steam names previously seen'></img>
             </button>
 
             <div id='searchError' style={searchStyle}>
@@ -480,6 +600,7 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
         </>
       }
       </div>
+    </>
     )
   }
 }
