@@ -15,6 +15,8 @@ export async function GET(request: Request, { params } : { params : {steamId: st
             'Access-Control-Allow-Methods': 'GET',
             'Access-Control-Allow-Headers': 'Content-Type',
         }});
+        // console.log("Response Status:", res.status);
+        // console.log("Response Body:", await res.text()); // Very helpful in helping me realize I forgot to update my env key
     
         if (!res.ok) { //https://nextjs.org/docs/app/building-your-application/routing/error-handling
             return NextResponse.json({error: 'Player not found'}, {status: 500})
