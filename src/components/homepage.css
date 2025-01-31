@@ -153,7 +153,7 @@
     position: absolute;
     background-color: #000000e0;
     max-width: 400px;
-    height: 50%;
+    height: 35%;
     max-height: 300px;
     border-radius: 5px;
 }
@@ -305,9 +305,10 @@ input[type="submit"] {
     height: fit-content;
 }
 
-@media (min-height: 600px) {
+@media (min-height: 700px) {
     #signIn-wrapper {
         max-height: 350px;
+        /* height: 45%; */
     }
     #help-wrapper {
         max-height: 320px;

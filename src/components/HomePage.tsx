@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { FriendList, Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions, SteamNames } from '@/components/types'; // Getting types
+import { Friend, SteamProfile, FriendPositions, FriendsAdded, IdSubmissions, SteamNames } from '@/components/types'; // Getting types
 import { getSteamProfile, getFriendsList } from "./steamapi";
 
 import { Canvas } from '@react-three/fiber'
@@ -12,13 +12,12 @@ import { getSign, validId } from "@/utils/helper";
 
 interface HomePageProps {
     steamProfileProp : (userProfile: SteamProfile | null ) => void;
-    friendsListProp : (friends : FriendList | null) => void;
     friendsPositionProp : (friendsPos : FriendPositions | null) => void;
     friendsAddedProp : (originalUser : FriendsAdded | null) => void;
     steamNamesProps : (newSteamNames : SteamNames | null) => void;
 }
 
-export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : HomePageProps) {
+export function HomePage({steamProfileProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : HomePageProps) {
     // States that get set by user's input
     const [steamId, setSteamId] = useState<string>('');
 
@@ -45,13 +44,14 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         const tempLocalIds : string[][]= []
         
         // Getting the used ids from local storage
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i); // Get the key at index i
-            if (key && (key !== "ph_phc_KWpsREatd07lrm0Wq5E6j0tOIjfYtYLjweE9bpHJAsm_posthog")&& (key !== "__NEXT_DISMISS_PRERENDER_INDICATOR")&& (key !== "ally-supports-cache")) {  // keys to be ignored
-            const value = localStorage.getItem(key); // Get the value associated with that key
-            if (value) {
-                tempLocalIds.push([key, value]);
-            }
+        const prevSearchesLS = localStorage.getItem("searches")
+        if (prevSearchesLS) {
+            const prevSearches = JSON.parse(prevSearchesLS);
+            if (prevSearches && typeof prevSearches === 'object') {
+                for (const [key, value] of Object.entries(prevSearches)) {
+                    const id = typeof value === "string" ? value: JSON.stringify(value); 
+                    tempLocalIds.push([key, id]);
+                }
             }
         }
         setLocalIds(tempLocalIds);
@@ -99,13 +99,19 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         }, 2000);
     }
 
-    const showHelpComponent = () => { setHelpComponent(true) }
+    const showHelpComponent = () => { 
+        setHelpComponent(true)
+        setDatabaseComponent(false);
+    }
     const hideHelpComponent = () => { setHelpComponent(false) }
 
     const showDatabase = () => { setDatabaseComponent(true)}
     const hideDatabaseComponent = () => {setDatabaseComponent(false)}
 
-    const showSignInComponent = () => { setSignInComponent(true) }
+    const showSignInComponent = () => { 
+        setSignInComponent(true)
+        setDatabaseComponent(false);
+    }
     const hideSignInComponent = () => { setSignInComponent(false) }
 
     const handleInfo = () => {
@@ -123,12 +129,27 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     }
 
     const clearSteamName = (steamName: string) => {
-        localStorage.removeItem(steamName);
+        const prevSearchesLS = localStorage.getItem("searches")
+        if (prevSearchesLS) {
+            const prevSearches = JSON.parse(prevSearchesLS);
+            if (prevSearches && typeof prevSearches === 'object' && prevSearches.hasOwnProperty(steamName)) {
+                delete prevSearches[steamName]
+                localStorage.setItem("searches", JSON.stringify(prevSearches))
+                // for (const [key, value] of localIds) {
+                    
+                // }
+                let index : number
+                for (let i = 0; i < localIds.length; i++) {
+                    if (localIds[i][0] == steamName) index = i 
+                }
+                setLocalIds(list => list.splice(index, 1))
+            }
+        }
     }
 
     // Extra styles dependent on states
     const opacityStyle = {
-        opacity: (helpComponent || infoComponent || databaseComponent)? 0.5: 1,
+        opacity: (helpComponent || infoComponent || databaseComponent || signInComponennt)? 0.5: 1,
         transition: 'all 0.3s ease'
     }
 
@@ -153,8 +174,11 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
     const handleSubmit = async (event : React.FormEvent) => {
         event.preventDefault();
         let steamProfile;
-        if (localStorage.getItem(steamId)){
-            const id = localStorage.getItem(steamId);
+        let prevSearches 
+        const prevSearchesLS = localStorage.getItem("searches")
+        if (prevSearchesLS) prevSearches = JSON.parse(prevSearchesLS);
+        if (prevSearches && typeof prevSearches === 'object' && prevSearches.hasOwnProperty(steamId)){
+            const id = prevSearches[steamId]
             if (id) {
                 steamProfile = await getSteamProfile(id);
             }
@@ -197,13 +221,20 @@ export function HomePage({steamProfileProp, friendsListProp, friendsPositionProp
         setDisabledButton(true);
 
         setTimeout(async () => {
-            friendsListProp(fList);
             const friendsPos : FriendPositions = {}
-
-            if (localStorage.getItem(steamProfile.steamid) === null) {
-                localStorage.setItem(steamProfile.personaname, steamProfile.steamid);
+            let prevSearches
+            const prevSearchesLS = localStorage.getItem("searches")
+            if (prevSearchesLS) prevSearches = JSON.parse(prevSearchesLS)
+            if (prevSearches && typeof prevSearches === 'object') {
+                prevSearches[steamProfile.personaname] = steamProfile.steamid;
+                localStorage.setItem("searches", JSON.stringify(prevSearches))                
             }
-            
+            else {
+                prevSearches = {
+                    [steamProfile.personaname]: steamProfile.steamid,      
+                };
+                localStorage.setItem("searches", JSON.stringify(prevSearches))
+            }
             const length = fList.friends.length
             const max = Math.sqrt(2000 * length) / 2;
 
