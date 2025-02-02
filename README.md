@@ -6,6 +6,7 @@
 ![Threejs](https://img.shields.io/badge/threejs-black?style=for-the-badge&logo=three.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 ![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=black)
 
 SteamFiber is a NextJS application built with [React Three Fiber](https://r3f.docs.pmnd.rs/getting-started/introduction). SteamFiber uses Steam's Web [API](https://steamcommunity.com/dev) to help create a 3D mapping of your Steam Friend network. 
 
@@ -25,6 +26,8 @@ SteamFiber is a NextJS application built with [React Three Fiber](https://r3f.do
 ```
   STEAM_WEB_API = "" // Can be obtained at https://steamcommunity.com/dev/apikey   
   APP_URL=http://localhost:3000/ // Use if running locally, replace with your site's base URL if deploying
+  NEXT_PUBLIC_SUPABASE_URL = // Include for sharing maps to work 
+  NEXT_PUBLIC_SUPABASE_ANON_KEY = // Include for sharing maps to work 
 ```
 3. Run the development server:
 ```
@@ -92,6 +95,18 @@ friendsPos[steamProfile.steamid] = {
     <img src=https://github.com/user-attachments/assets/7608956b-34e7-4c48-95d4-4ee3ac219463/>
 </details>
 
+## Integrating Supabase
+SteamFiber allows users to share maps and does so by utlizing [Supabase](https://supabase.com/) for the backend. The code below is what is sent to Supabase when a user clicks to save their map. 
+```
+const { data : customMap, error, status } = await supabase
+.from('customMaps')
+.insert([
+  { 'steamProfile': steamProfile, 'friendsPositions': friendsPos, 'steamNames': steamNames, 'addedNames': friendsAdded, 'user_id': userId},
+])
+.select('link')
+.single()
+```
+<br/>The first four columns are needed for the map to be reconstructed. The fifth column 'user_id' is not required to recreate the map, but is recommended so you can assign each visiter to a user_id, to then implement [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security) policies in your Supabase table. If you would not like to use Supabase but would like to integreate your own backend, the only data that needs to be saved to for a custom link are the first four columns.
 
 ## Learn More
 Here are some great resources I used while developing SteamFiber
@@ -100,4 +115,5 @@ Here are some great resources I used while developing SteamFiber
 - [Drei](https://drei.docs.pmnd.rs/getting-started/introduction) has a great collection of resources, I particularly took advantage of [Camera Controls](https://drei.docs.pmnd.rs/controls/camera-controls)
 - [GSAP](https://gsap.com/) was used for camera animations and it is a great tool to use with ThreeJS. Definetly give it a shot if you want to experiment with model/camera positionings
 - While I did not use a graph library, I did make a prototype with [React Sigma](https://sim51.github.io/react-sigma/). It has a lot of great uses
+- [Supabase](https://supabase.com/docs/guides/database/overview) looks to be a great backend service that I'll likely use for future projects
 
