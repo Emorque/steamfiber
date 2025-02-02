@@ -5,7 +5,7 @@ import { PostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "SteamFiber",
-  description: "See your network of Steam Friends",
+  description: "Create a 3D map of your network of Steam Friends",
 };
 
 export default function RootLayout({

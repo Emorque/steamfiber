@@ -110,12 +110,6 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   useEffect(() => {
     const handleKeyClick = (event : {key : string}) => {
       if (event.key === "Shift") {
-        // console.log("UI", showUI);
-        // console.log("Profile", visibleProfile);
-        // console.log("steamProfile", steamProfile);
-        // console.log("friendsPos", friendsPos);
-        // console.log("friendsAdded", friendsAdded);
-        // console.log("steamNames", steamNames);
         if (showUI || visibleProfile) {
           setUI(false);
           setVisibleProfile(false);
@@ -334,15 +328,38 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
 
   const generateLink = async () => {
     try {
+      const user = await supabase.auth.getUser();
+      // console.log(user);
+      let userId;
+      if (user.data.user !== null) { // Just using if(user) is not enough, as even if there is no user signin anonymously, an object is still created
+        userId = user.data.user?.id
+      }
+      else {
+        const { data: authData, error: authError } = await supabase.auth.signInAnonymously();
+
+        if (authError) {
+          console.error('Error signing in anonymously:', authError.message);
+          return;
+        }
+        userId = authData.user?.id
+      }
+
       const { data : customMap, error, status } = await supabase
       .from('customMaps')
       .insert([
-        { 'steamProfile': steamProfile, 'friendsPositions': friendsPos, 'steamNames': steamNames, 'addedNames': friendsAdded},
+        { 'steamProfile': steamProfile, 'friendsPositions': friendsPos, 'steamNames': steamNames, 'addedNames': friendsAdded, 'user_id': userId},
       ])
       .select('link')
       .single()
-  
-      if (error && status !== 406) {
+
+      if (error && status === 403) {
+        setLinkError("You can generate a link in the next hour")
+        setLinkLoading(false);
+        setTimeout(() => {
+          setLinkError("");
+        }, 2000);
+      }
+      else if (error && status !== 406) {
         setLinkError("Unable to Generate Link")
         setLinkLoading(false);
         setTimeout(() => {
