@@ -27,19 +27,33 @@
     gap: 5px;
 }
 
-#form-button {
+.form-button {
     opacity: 0.4;
     transition: all 0.5s ease;
     background-color: #ffffff00;
     border: 0px ;
-    font-size: medium;
-    margin: 0;
-    padding: 0;
+    
+
     color: #eaeaea;
     cursor: pointer;
 }
 
-#form-button:hover {
+.form-button:hover {
+    opacity: 1;
+}
+
+#demo, .form-button {
+    font-size: medium;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+}
+
+#demo {
+    opacity: 0.4;
+    transition: all 0.5s ease;
+}
+#demo:hover {
     opacity: 1;
 }
 

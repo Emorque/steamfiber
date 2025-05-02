@@ -1,10 +1,10 @@
 'use client'
 import { useCallback, useEffect, useState} from 'react'
 import { SteamProfile, FriendPositions, FriendsAdded, SteamNames } from '@/components/types';
-import { FiberPage } from '@/components/FiberPage';
 import { createClient } from '@/utils/supabase/client'
+import { FiberPageWK } from '@/components/FiberPageWK';
 
-export default function Countries({params} : {params : Promise<{mapurl : string}>}) {
+export default function Walkthrough() {
   const supabase = createClient()
   
   const [steamProfile, setSteamProfile] = useState<SteamProfile | null>(null);
@@ -20,7 +20,7 @@ export default function Countries({params} : {params : Promise<{mapurl : string}
       const { data: customMap , error, status } = await supabase
       .from("customMaps")
       .select('steamProfile, friendsPositions, steamNames, addedNames')
-      .eq('link', (await params).mapurl)
+      .eq('link', "7634100f-ed51-4290-8042-ca2ee99d1464")
       .single();
 
       if (error && status !== 406) {
@@ -39,7 +39,7 @@ export default function Countries({params} : {params : Promise<{mapurl : string}
     } finally {
       setLoading(false)
     }
-  }, [params, supabase]);
+  }, [supabase]);
 
   useEffect(() => {
     setPage()
@@ -47,16 +47,15 @@ export default function Countries({params} : {params : Promise<{mapurl : string}
 
   if (steamProfile && friendsPositions && friendsAdded && currentSteamNames && !loading) {
     return (
-      <FiberPage steamProfileProp={steamProfile} friendsPositionProp = {friendsPositions} friendsAddedProp = {friendsAdded} steamNamesProps = {currentSteamNames}></FiberPage>
+      <FiberPageWK steamProfileProp={steamProfile} friendsPositionProp = {friendsPositions} friendsAddedProp = {friendsAdded} steamNamesProps = {currentSteamNames}/>
     )
   }
   else {
     return (
-      <div className='loading_page'>
-        <div className='loading_icon'>
-            <h3>Loading</h3>
-        </div>    
-      </div>
-    )
+        <div className='loading_page'>
+            <div className='loading_icon'>
+                <h3>Loading</h3>
+            </div>    
+        </div>)
   }
 }

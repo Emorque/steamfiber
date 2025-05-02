@@ -11,6 +11,7 @@ import { FriendProfie } from './FriendProfile';
 import { Tube } from './Tube';
 
 import "./fiberpage.css"
+import "./wk.css"
 
 import * as THREE from 'three'
 import { DEG2RAD } from 'three/src/math/MathUtils.js'
@@ -66,7 +67,7 @@ interface FiberPageProps {
     steamNamesProps: SteamNames;
 }
 
-export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : FiberPageProps) {
+export function FiberPageWK({steamProfileProp, friendsPositionProp, friendsAddedProp, steamNamesProps} : FiberPageProps) {
   // Structures passed to fiberPage from homePage
   const [steamProfile] = useState<SteamProfile>(steamProfileProp);
   // const [friendsList, setFriendsList] = useState<FriendList | null>(friendsListProp);
@@ -105,6 +106,10 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   const [search, setSearch] = useState<string>('');
   
   const [searchError, setSearchError] = useState<boolean>(false);
+  
+// New content pretaining to the walkthrough ver.
+const [walkthrough, setWalkthrough] = useState<boolean>(true)
+const [wkStep, setWKStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9>(1)
 
   // Tab click to toggle UI
   useEffect(() => {
@@ -127,19 +132,6 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
     }
   }, [showUI, visibleProfile, steamProfile, friendsPos, friendsAdded, steamNames])
 
-  // Next two functions are for updating both maps FriendList and FriendPos with friend's friendList data
-  // const handleNewFriendsList = (newFriends : FriendList | null) => {
-  //     if (newFriends && friendsPos && friendsList) {
-  //       const friendListClone = {... friendsList} // Deep copy
-  //       newFriends.friends.map((friend) => {
-  //       if (!(friend.steamid in friendsPos || friend.steamid === steamProfile?.steamid) ) {
-  //           friendListClone.friends.push(friend); 
-  //       }
-  //       })
-  //       setFriendsList(friendListClone);
-  //     }
-  // }
-
   const handleNewFriendsPosition = (newFriendsPos : FriendPositions | null) => {
     if (newFriendsPos && friendsPos) {
       const friendsPosClone = {... friendsPos}; 
@@ -153,6 +145,10 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   }
 
   const handleClick = (pInfo: ParticleInfo) => {
+    if (pInfo.x === 0 && pInfo.y === 0 && pInfo.z === 0 && wkStep === 2){
+        setWKStep(3)
+        // setWalkthrough(false)
+    }
     setDisplayedSteamId(pInfo);
     setBgColor(getProfileHSL(pInfo.x, pInfo.y));
     setUI(true);
@@ -286,7 +282,10 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
     }       
   }
 
-  const toggleCameraSettings = () => { setCameraSettings(!cameraSettings); }
+  const toggleCameraSettings = () => { 
+    setCameraSettings(!cameraSettings); 
+    if (wkStep === 4) setWKStep(5);
+  }
 
   const toggleHorizontalCamera = () => {
     if (horizontalCamera === "right") {
@@ -298,8 +297,17 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
   }
 
   const toggleDatabase = () => { setVisibleDatabase(!visibleDatabase); }
-  const showShare = () => { setShare(true) }
-  const closeShare = () => { setShare(false) }
+  const showShare = () => { 
+    setShare(true);
+    if (wkStep === 6 && !walkthrough) {
+        setWKStep(7)
+        setWalkthrough(true)
+    }
+  }
+  const closeShare = () => { 
+    setShare(false)
+    setWKStep(8)
+    }
 
   const getLink = () => {
     if (linkLoading || linkError) return;
@@ -352,7 +360,6 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
       .select('link')
       .single()
 
-      
         //   RLS Policy that prevents users from making more than one map per hour. This error is returned if user is making too many maps
       if (error && status === 403) {
         setLinkError("You can generate a link in the next hour")
@@ -373,6 +380,7 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
         setLink(`steamfiber.com/custom/${customMap.link}`)
         setLinkLoading(false);
         localStorage.setItem("lastUpload", Date.now().toString())
+        setWKStep(8)
       }
     }
     catch {
@@ -384,8 +392,14 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
     }
   }
 
+  const [copyMessage, setCopyMessage] = useState<boolean>(false)
   const copyLink = () => {
     if (currentLink) navigator.clipboard.writeText(currentLink);
+    setCopyMessage(true)
+    setTimeout(() => {
+      setCopyMessage(false)
+    }, 2000)
+    if (wkStep === 8) setWKStep(9)
   }
 
 
@@ -483,10 +497,15 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
 
                 </button>
                 <p style={linkErrorStyle}>{linkError}</p>
-                {currentLink && <button className='shareBtns' onClick={copyLink}>Copy Link</button>}
+                {currentLink && <button className='shareBtns' disabled={copyMessage} onClick={copyLink}>{copyMessage? "Copied to Clipboard" : "Copy Link"}</button>}
               </div>
               
-            </div>                      
+            </div>     
+            {(wkStep === 7 || wkStep === 8) && 
+            <div id='wk_six'>
+                {wkStep === 7? <h3>&quot;Generate Link&quot; creates a custom link of your map ( 1/hr )</h3> : <h3>&quot;Copy Link&quot; copies the link to your clipboard, now your map is shareable with anyone!</h3>}
+            </div>
+            }                 
           </div>
         </>
       }
@@ -500,12 +519,6 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
           <ambientLight intensity={3} />
           
           <CustomCameraControls particlePos={cameraPos} cameraRef={cameraControlsRef}/>
-
-          {/* {friendsList.friends.map((friend) => {
-            return (
-              <Particle position={friendsPos[friend.steamid]} key={friend.steamid} id={friend.steamid} currentSteamNames = {steamNames} clicked={handleClick}/>
-            )
-          })} */}
           {
             Object.keys(friendsPos).map(key => {
               return (
@@ -513,26 +526,160 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
               )
             })
           }
-          {/* {friendsList.friends.map((friend) => {
-            return (
-              <Particle position={friendsPos[friend.steamid]} key={friend.steamid} id={friend.steamid} currentSteamNames = {steamNames} clicked={handleClick}/>
-            )
-          })} */}
           {displayedSteamId && <Tube po={displayedSteamId} allPositions = {friendsPos}/>}
         </Canvas>
 
         {displayedSteamId && 
-        <>
-        <div style={friendProfileBg} id='friend-container'>
-          <div id='star-bg'></div>
-          <button id='friend-close-btn' onClick={turnOff}>X</button>
-          <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} hideFriend={hideFriendProfile} allPositions = {friendsPos} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded} currentSteamNames = {steamNames}/>
-        </div>
-        </>
+            <>
+                <div style={friendProfileBg} id='friend-container'>
+                <div id='star-bg'></div>
+                <button id='friend-close-btn' onClick={turnOff}>X</button>
+                <FriendProfie friend_id= {displayedSteamId.pId} friend_since={displayedSteamId.friend_since} setFocus={setNewFocus} hideFriend={hideFriendProfile} allPositions = {friendsPos} friendsPositionProp={handleNewFriendsPosition} friendsAddedProp={friendsAdded} currentSteamNames = {steamNames}/>
+                </div>
+            </>
+        }
+
+        {walkthrough && 
+            <div id="wk_wrapper" className={wkStep === 2? "wk_wrapper2" : ""}>
+                {wkStep === 1 &&
+                <div className='wk_content scroll_wk' id="wk_one">
+                    <h1>SteamFiber</h1>
+                    <h3>Where you can make a 3D map of your Steam Network</h3>
+                    <div>
+                      <button onClick={() => setWKStep(2)}>Begin Walkthrough</button>
+                      <button onClick={() => setWalkthrough(false)}>Skip Walkthrough</button>
+                    </div>
+                    
+                </div>
+                }
+                {wkStep === 2 && 
+                <div className='wk_content scroll_wk' id="wk_two">
+                    <div id='ct_one'>
+                        <h3>Click the White Particle</h3>
+                        <h3>It represents the Origin User in the network</h3>
+                    </div>
+                    <div id='ct_two'></div>
+                    <div className='ct_side'/>
+                    <div className='ct_side'/>
+                </div>
+                }
+                {wkStep === 3 && 
+                <div id="wk_three" className='scroll_wk'>
+                    <div className='friend_info'>
+                        <img src='/images/focus.svg'/>
+                        <p>Centers Selected User on Screen</p>
+                    </div>
+
+                    <div className='friend_info'>
+                        <img src='/images/copy.svg'/>
+                        <p>Copies Steam ID to Clipboard</p>
+                    </div>
+
+                    <div className='friend_info'>
+                        <img src='/images/hide.svg'/>
+                        <p>Hides UI</p>
+                        <p>Can be toggled with &quot;Shift&quot;</p>
+                    </div>
+
+                    <div className='friend_info'>
+                        <h3>&quot;Visit Profile&quot;</h3>
+                        <p>Clickable Link to user&apos;s Steam Profile Page</p>
+                    </div>
+
+                    <div className='friend_info'>
+                        <h3>&quot;Add Their Friends&quot;</h3>
+                        <p>Adds user&apos;s friends to the network (Public Profile required)</p>
+                    </div>
+                    
+                    <div className='friend_info'>
+                        <h3>&quot;Recently Played&quot;</h3>
+                        <p>Last Played Games (Last 2 weeks)</p>
+                    </div>
+
+                    <button onClick={() => {setWKStep(4); turnOff()}}>Next</button>
+                </div>
+                }
+                {wkStep === 4&& 
+                <div id="wk_four">
+                    <div className='wk_cover'></div>
+                    <div className='scroll_wk wks_content'>
+                      <div className='search_info'>
+                          <h3>Search Bar</h3>
+                          <p>Search Users (by Steam ID or Name)</p>
+                      </div>
+
+                      <div className='search_info'>
+                          <img src='/images/database.svg'/>
+                          <p>Shows Clicked Usernames</p>
+                      </div>
+                      
+                      <div className='search_info'>
+                          <img src='/images/share.svg'/>
+                          <p>Opens &quot;Share&quot; Menu</p>
+                      </div>
+                      
+                      <div className='search_info'>
+                          <img src='/images/shuffle.svg'/>
+                          <p>Selects Random User</p>
+                      </div>
+                      
+                      <div className='search_info'>
+                          <img src='/images/focus.svg'/>
+                          <p>Resets to Origin User</p>
+                      </div>
+
+                      <div className='search_info'>
+                          <img src='/images/cameraSettings.svg'/>
+                          <p>Toggles Camera UI</p>
+                          <br/>
+                          <div className='search_info_btn'><p>Click</p><img src='/images/cameraSettings.svg'/><p>to Continue</p></div>
+                      </div>
+                    </div>
+                </div>
+                }
+                {wkStep === 5 &&
+                <div id="wk_five">
+                    <div className='wk_cover'></div>
+                    <div className='scroll_wk wks_content'>
+                      <div className='search_info'>
+                          <img src='/images/cameraBase.svg'/>
+                          <p>Click to switch direction, then a deg° button to Turn</p>
+                      </div>
+
+                      <div className='search_info'>
+                          <div>
+                              <img src='/images/zoom-in.svg'/>
+                              <img src='/images/zoom-out.svg'/>
+                          </div>
+                          <p>Zoom In / Zoom Out</p>
+                      </div>
+
+                      <div className='search_info'>
+                          <div id='search_camara'>
+                              <img src='/images/cameraBase.svg'/>
+                              <img src='/images/arrow-repeat.svg'/>
+                          </div>
+                          <p>Toggles &quot;Free Roam&quot;: the camera rotates around the current origin</p>
+                      </div>
+
+                      <div className='search_info'>
+                          <img src='/images/hide.svg'/>
+                          <p>Hides UI</p>
+                          <p>Can be toggled with &quot;Shift&quot;</p>
+                      </div>
+
+                      <button onClick={() => {setWalkthrough(false); setWKStep(6)}}>
+                          Explore the Rest!
+                      </button>
+                      <div className='search_info_btn'><p>Click</p><img src='/images/share.svg'/><p>when you&apos;re ready to share your map!</p></div>
+                  
+                    </div>
+                  </div>}
+            </div>
         }
 
         {showUI && <>
-          <div id='search-wrapper'>
+          <div id='search-wrapper' className={(wkStep > 3)? "leftUI" : ""}>
             <form id='search-container' onSubmit={handleSubmit}>
               <input
                   type="text"
@@ -550,7 +697,7 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
             <button className="database-btn" onClick={toggleDatabase}>
               <img src="/images/database.svg" width={15} height={15} alt='button for toggling list of steam names previously seen'></img>
             </button>
-            <button className="database-btn share-btn" onClick={showShare}>
+            <button className="database-btn share-btn" disabled={wkStep === 4 || wkStep === 5} onClick={showShare}>
               <img src="/images/share.svg" width={15} height={15} alt='button for toggling list of steam names previously seen'></img>
             </button>
 
@@ -570,7 +717,7 @@ export function FiberPage({steamProfileProp, friendsPositionProp, friendsAddedPr
               </div>
             </div>
           </div>
-          <div id='camera-container'>
+          <div id='camera-container' className={(wkStep > 3)? "leftUI2" : ""}>
             <div id='select-btns'> 
               <button onClick={randomFriend} style={{border: 0, backgroundColor: "transparent", padding: 0}} disabled={disabledRandom}>
                 <img fetchPriority='low' src='/images/shuffle.svg' width={40} height={40} className='cursor-pointer' style={randomBtnStyle} alt='Click to select a random friend'/>  

@@ -9,6 +9,7 @@ import { HpParticle } from "./HpParticle";
 import "./homepage.css";
 
 import { getSign, validId } from "@/utils/helper";
+import Link from "next/link";
 
 interface HomePageProps {
     steamProfileProp : (userProfile: SteamProfile | null ) => void;
@@ -302,9 +303,10 @@ export function HomePage({steamProfileProp, friendsPositionProp, friendsAddedPro
                         </button>
                     </div>
                     <div id='btn-container'>
-                        <button onClick={showHelpComponent} id="form-button" disabled={disabledButton}>Don&apos;t Know?</button>
+                        <button onClick={showHelpComponent} className="form-button" disabled={disabledButton}>Don&apos;t Know?</button>
                         {idMessage && (<p style={messageTextStyle} className="error-text">{idMessage}</p>)}
-                        <button onClick={showSignInComponent} id="form-button" disabled={disabledButton}>Sign in with Steam</button>
+                        <button onClick={showSignInComponent} className="form-button" disabled={disabledButton}>Sign in with Steam</button>
+                        <Link id="demo" href={"/demo"}>Want to Demo Instead?</Link>
                     </div>
                 </div>
 
