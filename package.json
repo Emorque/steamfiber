@@ -15,7 +15,7 @@
     "@supabase/supabase-js": "^2.48.1",
     "@types/three": "^0.171.0",
     "gsap": "^3.12.5",
-    "next": "14.2.22",
+    "next": "^14.2.35",
     "openid": "^2.0.12",
     "posthog-js": "^1.212.0",
     "react": "^18",
@@ -28,7 +28,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.2.22",
+    "eslint-config-next": "^16.1.1",
     "typescript": "^5"
   }
 }
